@@ -1,0 +1,21 @@
+name: PearResourceWorld
+version: "1.0"
+author: deka9584
+main: pear.resourceworld.PearResourceWorld
+api-version: 1.15
+commands:
+  pearresourceworldadmin:
+    description: admin command
+    aliases: [resourceworldadmin]
+    permission: pearresourceworld.admin
+  pearresourceworld:
+    description: tp to resource world
+    aliases: [resourceworld]
+    permission: pearresourceworld.tp
+permissions:
+  pearresourceworld.admin:
+    description: Allows admin command
+    default: op
+  pearresourceworld.tp:
+    description: Allows resource world tp command
+    default: op

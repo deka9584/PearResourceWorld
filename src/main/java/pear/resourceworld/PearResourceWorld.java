@@ -1,0 +1,96 @@
+package pear.resourceworld;
+
+import java.util.logging.Level;
+
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
+
+import pear.resourceworld.commands.ResourceWorldAdminCommand;
+import pear.resourceworld.commands.ResourceWorldCommand;
+import pear.resourceworld.managers.DataFileManager;
+import pear.resourceworld.managers.MessagesFileManager;
+import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.runnable.ResetWorldsRunnable;
+
+public class PearResourceWorld extends JavaPlugin {
+    private static PearResourceWorld plugin;
+    private ResourceWorldsManager resourceWorldsManager;
+    private DataFileManager dataFileManager;
+    private MessagesFileManager messagesFileManager;
+    private BukkitTask resetWorldsTask;
+
+    // This code is called after the server starts and after the /reload command
+    @Override
+    public void onEnable() {
+        plugin = this;
+        saveDefaultConfig();
+
+        dataFileManager = new DataFileManager(this);
+        messagesFileManager = new MessagesFileManager(this);
+        resourceWorldsManager = new ResourceWorldsManager(this);
+
+        dataFileManager.load();
+        messagesFileManager.load();
+        resourceWorldsManager.loadWorlds();
+
+        getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
+        getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
+
+        getCommand("pearresourceworld").setExecutor(new ResourceWorldCommand(this));
+        getCommand("pearresourceworld").setTabCompleter(new ResourceWorldCommand(this));
+
+        updateTaskTimer();
+
+        getLogger().log(Level.INFO, "{0}.onEnable()", this.getClass().getName());
+    }
+
+    // This code is called before the server stops and after the /reload command
+    @Override
+    public void onDisable() {
+        if (resetWorldsTask != null && !resetWorldsTask.isCancelled()) {
+            resetWorldsTask.cancel();
+        }
+
+        getLogger().log(Level.INFO, "{0}.onDisable()", this.getClass().getName());
+    }
+
+    public void debugLog(String msg) {
+        if (getConfig().getBoolean("debug")) {
+            getLogger().log(Level.INFO, msg);
+        }
+    }
+
+    public ResourceWorldsManager getResourceWorldsManager() {
+        return resourceWorldsManager;
+    }
+
+    public DataFileManager getDataFileManager() {
+        return dataFileManager;
+    }
+
+    public MessagesFileManager getMessagesFileManager() {
+        return messagesFileManager;
+    }
+
+    public void logError(String msg) {
+        getLogger().log(Level.SEVERE, msg);
+    }
+
+    public void logWarn(String msg) {
+        getLogger().log(Level.WARNING, msg);
+    }
+
+    public void updateTaskTimer() {
+        if (resetWorldsTask != null && !resetWorldsTask.isCancelled()) {
+            resetWorldsTask.cancel();
+        }
+
+        if (getConfig().getBoolean("auto-reset")) {
+            resetWorldsTask = new ResetWorldsRunnable(this).runTaskTimer(this, 0L, 20L * 60 * 60);
+        }
+    }
+
+    public static PearResourceWorld getInstance() {
+        return plugin;
+    }
+}
