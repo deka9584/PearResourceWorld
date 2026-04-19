@@ -6,7 +6,8 @@ public class FileUtils {
     public static void deleteDirectory(File directory) {
         if (directory.exists() && directory.isDirectory()) {
             File[] files = directory.listFiles();
-            if (files != null)
+
+            if (files != null) {
                 for (File file : files) {
                     if (file.isDirectory()) {
                         deleteDirectory(file);
@@ -14,6 +15,9 @@ public class FileUtils {
                         file.delete();
                     }
                 }
+            }
+
+            directory.delete();
         }
     }
 }
