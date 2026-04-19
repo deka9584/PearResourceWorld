@@ -16,11 +16,16 @@ public class ResetWorldsRunnable extends BukkitRunnable {
     @Override
     public void run() {
         if (plugin.getResourceWorldsManager().canAutoReset()) {
-            LocalDate lastReset = plugin.getDataFileManager().getLastReset();
-            LocalDate now = LocalDate.now();
-    
-            if (lastReset.plusMonths(1).isBefore(now) || lastReset.plusMonths(1).isEqual(now)) {
-                plugin.getResourceWorldsManager().resetWorlds();
+            int resetInterval = plugin.getConfig().getInt("reset-interval", 0);
+            plugin.debugLog("Checking for resource world reset");
+
+            if (resetInterval > 0) {
+                LocalDate lastReset = plugin.getDataFileManager().getLastReset();
+                LocalDate now = LocalDate.now();
+        
+                if (!lastReset.plusDays(resetInterval).isAfter(now)) {
+                    plugin.getResourceWorldsManager().resetWorlds();
+                }
             }
         }
     }
