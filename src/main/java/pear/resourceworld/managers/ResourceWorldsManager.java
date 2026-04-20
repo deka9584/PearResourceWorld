@@ -38,13 +38,17 @@ public class ResourceWorldsManager {
         return plugin.getConfig().getBoolean("reset-with-players-online") || plugin.getServer().getOnlinePlayers().size() == 0;
     }
 
+    public ResourceWorld getResourceWorld(String dimension) {
+        return resourceWorlds.get(dimension);
+    }
+
     public ResourceWorldSettings getResourceWorldSettings() {
         return resourceWorldSettings;
     }
 
-    public boolean isInResourceWorld(Player player) {
+    public boolean isResourceWorld(World world) {
         for (ResourceWorld rw : resourceWorlds.values()) {
-            if (rw.getName().equals(player.getWorld().getName())) {
+            if (rw.getName().equals(world.getName())) {
                 return true;
             }
         }
@@ -229,7 +233,7 @@ public class ResourceWorldsManager {
 
     public void kickAllFromResourceWorld() {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (isInResourceWorld(player)) {
+            if (isResourceWorld(player.getWorld())) {
                 if (player.teleport(spawnWorld.getSpawnLocation())) {
                     player.sendMessage(messagesFm.getMessage("teleport-to-spawn"));
                 } else {

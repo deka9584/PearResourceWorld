@@ -58,7 +58,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     if (sender instanceof Player) {
                         Player player = (Player) sender;
 
-                        if (resourceWorldsManager.isInResourceWorld(player)) {
+                        if (resourceWorldsManager.isResourceWorld(player.getWorld())) {
                             sender.sendMessage(messagesFm.getMessage("already-resource-world-self"));
                             return false;
                         }

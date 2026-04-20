@@ -2,11 +2,13 @@ package pear.resourceworld;
 
 import java.util.logging.Level;
 
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.commands.ResourceWorldAdminCommand;
 import pear.resourceworld.commands.ResourceWorldCommand;
+import pear.resourceworld.listeners.PortalListener;
 import pear.resourceworld.managers.DataFileManager;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
@@ -39,6 +41,7 @@ public class PearResourceWorld extends JavaPlugin {
         getCommand("pearresourceworld").setExecutor(new ResourceWorldCommand(this));
         getCommand("pearresourceworld").setTabCompleter(new ResourceWorldCommand(this));
 
+        registerListeners();
         updateTaskTimer();
 
         getLogger().log(Level.INFO, "{0}.onEnable()", this.getClass().getName());
@@ -78,6 +81,12 @@ public class PearResourceWorld extends JavaPlugin {
 
     public void logWarn(String msg) {
         getLogger().log(Level.WARNING, msg);
+    }
+
+    public void registerListeners() {
+        PluginManager pm = getServer().getPluginManager();
+
+        pm.registerEvents(new PortalListener(this), this);
     }
 
     public void updateTaskTimer() {
