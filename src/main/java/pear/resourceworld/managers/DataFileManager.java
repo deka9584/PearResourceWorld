@@ -13,14 +13,14 @@ import pear.resourceworld.PearResourceWorld;
 public class DataFileManager {
     private final PearResourceWorld plugin;
     private File dataFile;
-    private FileConfiguration data;
+    private FileConfiguration dataConfig;
 
     public DataFileManager(PearResourceWorld plugin) {
         this.plugin = plugin;
     }
 
     public LocalDate getLastReset() {
-        String value = data.getString("last-reset");
+        String value = dataConfig.getString("last-reset");
 
         if (value != null && !value.isEmpty()) {
             try {
@@ -34,12 +34,14 @@ public class DataFileManager {
     }
 
     public void setLastReset(LocalDate date) {
-        data.set("last-reset", date.toString());
+        dataConfig.set("last-reset", date.toString());
         save();
     }
 
     public void load() {
-        dataFile = new File(plugin.getDataFolder(), "data.yml");
+        if (dataFile == null) {
+            dataFile = new File(plugin.getDataFolder(), "data.yml");
+        }
 
         if (!dataFile.exists()) {
             try {
@@ -50,15 +52,15 @@ public class DataFileManager {
             }
         }
 
-        data = YamlConfiguration.loadConfiguration(dataFile);
-        data.options().copyDefaults();
+        dataConfig = YamlConfiguration.loadConfiguration(dataFile);
+        dataConfig.options().copyDefaults();
         plugin.debugLog("Loaded data file");
     }
 
     public boolean save() {
-        if (dataFile == null || data == null) {
+        if (dataFile != null && dataConfig != null) {
             try {
-                data.save(dataFile);
+                dataConfig.save(dataFile);
                 return true;
             } catch (IOException ex) {
                 plugin.logError("Unable to save data.yml file");
@@ -69,7 +71,7 @@ public class DataFileManager {
         return false;
     }
 
-    public FileConfiguration getData() {
-        return data;
+    public FileConfiguration getDataConfig() {
+        return dataConfig;
     }
 }
