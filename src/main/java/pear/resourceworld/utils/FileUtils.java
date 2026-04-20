@@ -3,7 +3,7 @@ package pear.resourceworld.utils;
 import java.io.File;
 
 public class FileUtils {
-    public static void deleteDirectory(File directory) {
+    public static boolean deleteDirectory(File directory) {
         if (directory.exists() && directory.isDirectory()) {
             File[] files = directory.listFiles();
 
@@ -17,7 +17,9 @@ public class FileUtils {
                 }
             }
 
-            directory.delete();
+            return directory.delete();
         }
+
+        return false;
     }
 }

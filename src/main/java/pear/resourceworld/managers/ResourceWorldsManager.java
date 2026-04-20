@@ -1,7 +1,10 @@
 package pear.resourceworld.managers;
 
+import java.io.File;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,6 +23,7 @@ import pear.resourceworld.utils.WorldUtils;
 public class ResourceWorldsManager {
     private final PearResourceWorld plugin;
     private final MessagesFileManager messagesFm;
+
     private HashMap<String, ResourceWorld> resourceWorlds = new HashMap<>();
     private ResourceWorldSettings resourceWorldSettings;
     private World spawnWorld;
@@ -34,9 +38,13 @@ public class ResourceWorldsManager {
         return plugin.getConfig().getBoolean("reset-with-players-online") || plugin.getServer().getOnlinePlayers().size() == 0;
     }
 
+    public ResourceWorldSettings getResourceWorldSettings() {
+        return resourceWorldSettings;
+    }
+
     public boolean isInResourceWorld(Player player) {
         for (ResourceWorld rw : resourceWorlds.values()) {
-            if (rw.getWorld().getUID() == player.getWorld().getUID()) {
+            if (rw.getName().equals(player.getWorld().getName())) {
                 return true;
             }
         }
@@ -50,8 +58,8 @@ public class ResourceWorldsManager {
 
     public void loadWorlds() {
         FileConfiguration config = plugin.getConfig();
-        boolean isNewWorld = false;
         String spawnWorldName = config.getString("spawn-world");
+        resourceWorldReady = false;
 
         if (spawnWorldName == null || spawnWorldName.isEmpty()) {
             plugin.logWarn("Spawn world not specified: Using the default server spawnpoint!");
@@ -69,11 +77,14 @@ public class ResourceWorldsManager {
 
         ConfigurationSection dimensions = config.getConfigurationSection("resource-dimensions");
         String resourceOverworldName = dimensions.getString("overworld.name");
+        boolean isNewWorld = false;
         
         if (resourceOverworldName == null || resourceOverworldName.isEmpty()) {
             plugin.logError("Unable to load resource world: Overworld dimension is required");
             return;
         }
+
+        resourceWorlds.clear();
 
         for (String key : dimensions.getKeys(false)) {
             Environment env = getConfigEnvironment(key);
@@ -93,6 +104,8 @@ public class ResourceWorldsManager {
             World world = plugin.getServer().getWorld(worldName);
 
             if (world == null) {
+                plugin.getLogger().info("Generating a new resource world: " + worldName);
+
                 world = WorldUtils.generateWorld(
                     worldName,
                     resourceWorldSettings.getCustomSeed(),
@@ -102,7 +115,7 @@ public class ResourceWorldsManager {
                 );
 
                 isNewWorld = true;
-                plugin.getLogger().info("Created a new resource world: " + worldName);
+                plugin.getLogger().info("Generated a new resource world: " + worldName);
             }
 
             resourceWorld.setWorld(world);
@@ -138,36 +151,63 @@ public class ResourceWorldsManager {
         kickAllFromResourceWorld();
 
         scheduler.runTaskLater(plugin, () -> {
+            List<File> folderToDelete = new ArrayList<>();
+
             for (ResourceWorld rw : resourceWorlds.values()) {
                 World w = rw.getWorld();
-                plugin.getServer().unloadWorld(w, false);
-                FileUtils.deleteDirectory(w.getWorldFolder());
-                rw.setWorld(null);
-                plugin.debugLog("Deleted world: " + rw.getName());
-            }
 
-            scheduler.runTaskLater(plugin, () -> {
-                for (ResourceWorld rw : resourceWorlds.values()) {
-
-                    World w = WorldUtils.generateWorld(
-                        rw.getName(),
-                        resourceWorldSettings.getCustomSeed(),
-                        rw.getEnvironment(),
-                        WorldType.NORMAL,
-                        true
-                    );
-
-                    rw.setWorld(w);
-                    rw.updateWorldBorder();
-                    rw.updateWorldFlags(resourceWorldSettings);
-                    plugin.debugLog("Generated world: " + rw.getName());
+                if (!plugin.getServer().unloadWorld(w, false)) {
+                    plugin.logError("Unable to unload world: " + rw.getName());
+                    continue;
                 }
 
-                plugin.getDataFileManager().setLastReset(LocalDate.now());
-                plugin.getLogger().info("Resource worlds reset completed");
-                plugin.getServer().broadcastMessage(messagesFm.getMessage("reset-completed"));
-                resourceWorldReady = true;
-            }, 160L);
+                rw.setWorld(null);
+                folderToDelete.add(w.getWorldFolder());
+            }
+
+            scheduler.runTaskAsynchronously(plugin, () -> {
+                for (File folder : folderToDelete) {
+                    if (!FileUtils.deleteDirectory(folder)) {
+                        plugin.logError("Unable to delete world: " + folder.getName());
+                        continue;
+                    }
+                    
+                    plugin.debugLog("Deleted world: " + folder.getName());
+                }
+
+                if (!plugin.isEnabled()) {
+                    plugin.logWarn("Plugin disabled during async reset. Shkipping world regen");
+                    return;
+                }
+                
+                scheduler.runTaskLater(plugin, () -> {
+                    for (ResourceWorld rw : resourceWorlds.values()) {
+                        if (rw.getWorld() != null) {
+                            plugin.logError("Unable to regenerate world: " + rw.getName());
+                            continue;
+                        }
+    
+                        World w = WorldUtils.generateWorld(
+                            rw.getName(),
+                            resourceWorldSettings.getCustomSeed(),
+                            rw.getEnvironment(),
+                            WorldType.NORMAL,
+                            true
+                        );
+    
+                        rw.setWorld(w);
+                        rw.updateWorldBorder();
+                        rw.updateWorldFlags(resourceWorldSettings);
+                        plugin.debugLog("Generated world: " + rw.getName());
+                    }
+    
+                    plugin.getDataFileManager().setLastReset(LocalDate.now());
+                    plugin.getLogger().info("Resource worlds reset completed");
+                    plugin.getServer().broadcastMessage(messagesFm.getMessage("reset-completed"));
+                    resourceWorldReady = true;
+                }, 160L);
+            });
+
         }, 80L);
     }
 
