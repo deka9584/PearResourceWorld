@@ -14,6 +14,7 @@ public class ResourceWorldSettings {
     private boolean alwaysDay;
     private boolean allowNetherPortals;
     private boolean allowEndPortals;
+    private boolean disableDragonBattle;
 
     public ResourceWorldSettings(ConfigurationSection configSect) {
         this.teleportSpawnOnQuit = configSect.getBoolean("teleport-spawn-on-quit");
@@ -30,6 +31,7 @@ public class ResourceWorldSettings {
         this.alwaysDay = configSect.getBoolean("always-day");
         this.allowNetherPortals = configSect.getBoolean("allow-nether-portals"); 
         this.allowEndPortals = configSect.getBoolean("allow-end-portals");
+        this.disableDragonBattle = configSect.getBoolean("disable-dragon-battle");
     }
 
     public boolean getTeleportSpawnOnQuit() {
@@ -62,5 +64,9 @@ public class ResourceWorldSettings {
 
     public boolean getAllowEndPortals() {
         return allowEndPortals;
+    }
+    
+    public boolean getDisableDragonBattle() {
+        return disableDragonBattle;
     }
 }

@@ -22,7 +22,6 @@ import pear.resourceworld.utils.WorldUtils;
 
 public class ResourceWorldsManager {
     private final PearResourceWorld plugin;
-    private final MessagesFileManager messagesFm;
 
     private HashMap<String, ResourceWorld> resourceWorlds = new HashMap<>();
     private ResourceWorldSettings resourceWorldSettings;
@@ -31,7 +30,6 @@ public class ResourceWorldsManager {
 
     public ResourceWorldsManager(PearResourceWorld plugin) {
         this.plugin = plugin;
-        this.messagesFm = plugin.getMessagesFileManager();
     }
 
     public boolean canAutoReset() {
@@ -150,7 +148,10 @@ public class ResourceWorldsManager {
         resourceWorldReady = false;
         
         plugin.getLogger().info("Resetting resource worlds");
-        plugin.getServer().broadcastMessage(messagesFm.getMessage("reset-started"));
+
+        plugin.getServer().broadcastMessage(
+            plugin.getMessagesFileManager().getMessage("reset-started")
+        );
 
         kickAllFromResourceWorld();
 
@@ -202,12 +203,17 @@ public class ResourceWorldsManager {
                         rw.setWorld(w);
                         rw.updateWorldBorder();
                         rw.updateWorldFlags(resourceWorldSettings);
+
                         plugin.debugLog("Generated world: " + rw.getName());
                     }
     
                     plugin.getDataFileManager().setLastReset(LocalDate.now());
                     plugin.getLogger().info("Resource worlds reset completed");
-                    plugin.getServer().broadcastMessage(messagesFm.getMessage("reset-completed"));
+
+                    plugin.getServer().broadcastMessage(
+                        plugin.getMessagesFileManager().getMessage("reset-completed")
+                    );
+
                     resourceWorldReady = true;
                 }, 160L);
             });
@@ -235,9 +241,13 @@ public class ResourceWorldsManager {
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             if (isResourceWorld(player.getWorld())) {
                 if (player.teleport(spawnWorld.getSpawnLocation())) {
-                    player.sendMessage(messagesFm.getMessage("teleport-to-spawn"));
+                    player.sendMessage(
+                        plugin.getMessagesFileManager().getMessage("teleport-to-spawn")
+                    );
                 } else {
-                    player.kickPlayer(messagesFm.getMessage("kick-from-resource-world"));
+                    player.kickPlayer(
+                        plugin.getMessagesFileManager().getMessage("kick-from-resource-world")
+                    );
                 }
             }
         }

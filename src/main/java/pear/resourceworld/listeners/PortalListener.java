@@ -10,24 +10,19 @@ import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 
 import pear.resourceworld.PearResourceWorld;
-import pear.resourceworld.managers.ResourceWorldsManager;
-import pear.resourceworld.model.ResourceWorld;
-import pear.resourceworld.model.ResourceWorldSettings;
 
 public class PortalListener implements Listener {
     private final PearResourceWorld plugin;
-    private final ResourceWorldsManager rwManager;
 
     public PortalListener(PearResourceWorld plugin) {
         this.plugin = plugin;
-        this.rwManager = plugin.getResourceWorldsManager();
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerPortal(PlayerPortalEvent event) {
         Location from = event.getFrom();
 
-        if (from == null || event.isCancelled() || !rwManager.isResourceWorld(from.getWorld())) {
+        if (event.isCancelled() || !plugin.getRwPortalHelper().isFromResourceWorld(from)) {
             return;
         }
 
@@ -44,7 +39,7 @@ public class PortalListener implements Listener {
                 return;
         }
 
-        if (!isResourcePortalAllowed(portalType)) {
+        if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
             event.setCancelled(true);
             return;
         }
@@ -54,7 +49,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        Location dest = getDestinationForResource(from, portalType);
+        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType);
 
         if (dest == null) {
             plugin.debugLog("Player portal location default");
@@ -69,7 +64,7 @@ public class PortalListener implements Listener {
     public void onEntityPortal(EntityPortalEvent event) {
         Location from = event.getFrom();
 
-        if (from == null || event.isCancelled() || !rwManager.isResourceWorld(from.getWorld())) {
+        if (event.isCancelled() || !plugin.getRwPortalHelper().isFromResourceWorld(from)) {
             return;
         }
         
@@ -94,77 +89,19 @@ public class PortalListener implements Listener {
             return;
         }
 
-        if (!isResourcePortalAllowed(portalType)) {
+        if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
             event.setCancelled(true);
             return;
         }
 
-        Location dest = getDestinationForResource(from, portalType);
+        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType);
 
         if (dest == null) {
-            plugin.debugLog("Entity portal location default");
+            plugin.debugLog("Entity portal location default: " + event.getEntityType().name());
             return;
         }
 
         event.setTo(dest);
         plugin.debugLog("Entity portal location on world: " + dest.getWorld().getName());
-    }
-
-    private Location getDestinationForResource(Location from, PortalType portalType) {
-        Environment fromEnv = from.getWorld().getEnvironment();
-
-        // Overworld -> nether
-        if (fromEnv == Environment.NORMAL && portalType == PortalType.NETHER) {
-            ResourceWorld rw = rwManager.getResourceWorld("nether");
-            if (rw == null || rw.getWorld() == null) return null;
-
-            World dstWorld = rw.getWorld();
-            int x = (int) from.getX() / 8;
-            int z = (int) from.getZ() / 8;
-            int y = Math.min(dstWorld.getHighestBlockYAt(x, z), 120);
-
-            return new Location(dstWorld, x, y, z);
-        }
-
-        // Overworld -> end
-        if (fromEnv == Environment.NORMAL && portalType == PortalType.ENDER) {
-            ResourceWorld rw = rwManager.getResourceWorld("end");
-            if (rw == null || rw.getWorld() == null) return null;
-            
-            return rw.getWorld().getSpawnLocation();
-        }
-
-        // Nether -> overworld
-        if (fromEnv == Environment.NETHER && portalType == PortalType.NETHER) {
-            ResourceWorld rw = rwManager.getResourceWorld("overworld");
-            if (rw == null || rw.getWorld() == null) return null;
-            
-            World dstWorld = rw.getWorld();
-            int x = (int) from.getX() * 8;
-            int z = (int) from.getZ() * 8;
-            int y = dstWorld.getHighestBlockYAt(x, z);
-
-            return new Location(dstWorld, x, y, z);
-        }
-
-        return null;
-    }
-
-    private boolean isResourcePortalAllowed(PortalType portalType) {
-        ResourceWorldSettings rwSettings = rwManager.getResourceWorldSettings();
-
-        if (rwSettings == null) {
-            plugin.logWarn("Resource world settings not initalized");
-            return false;
-        }
-
-        switch (portalType) {
-            case NETHER:
-                return rwSettings.getAllowNetherPortals();
-            case ENDER:
-                return rwSettings.getAllowEndPortals();
-            default:
-                return false;
-        }
     }
 }

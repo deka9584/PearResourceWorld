@@ -8,7 +8,10 @@ import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.commands.ResourceWorldAdminCommand;
 import pear.resourceworld.commands.ResourceWorldCommand;
+import pear.resourceworld.helpers.RWPortalHelper;
+import pear.resourceworld.listeners.EntitySpawnListener;
 import pear.resourceworld.listeners.PortalListener;
+import pear.resourceworld.listeners.WorldLoadListener;
 import pear.resourceworld.managers.DataFileManager;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
@@ -16,30 +19,35 @@ import pear.resourceworld.runnable.ResetWorldsRunnable;
 
 public class PearResourceWorld extends JavaPlugin {
     private static PearResourceWorld plugin;
+
     private ResourceWorldsManager resourceWorldsManager;
     private DataFileManager dataFileManager;
     private MessagesFileManager messagesFileManager;
+    private RWPortalHelper rwPortalHelper;
     private BukkitTask resetWorldsTask;
 
     // This code is called after the server starts and after the /reload command
     @Override
     public void onEnable() {
         plugin = this;
+
         saveDefaultConfig();
 
         dataFileManager = new DataFileManager(this);
         messagesFileManager = new MessagesFileManager(this);
         resourceWorldsManager = new ResourceWorldsManager(this);
 
+        rwPortalHelper = new RWPortalHelper(this);
+
         dataFileManager.load();
         messagesFileManager.load();
         resourceWorldsManager.loadWorlds();
 
         getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
-        getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
+        // getCommand("pearresourceworldadmin").setTabCompleter(new ResourceWorldAdminCommand(this));
 
         getCommand("pearresourceworld").setExecutor(new ResourceWorldCommand(this));
-        getCommand("pearresourceworld").setTabCompleter(new ResourceWorldCommand(this));
+        // getCommand("pearresourceworld").setTabCompleter(new ResourceWorldCommand(this));
 
         registerListeners();
         updateTaskTimer();
@@ -75,6 +83,10 @@ public class PearResourceWorld extends JavaPlugin {
         return messagesFileManager;
     }
 
+    public RWPortalHelper getRwPortalHelper() {
+        return rwPortalHelper;
+    }
+
     public void logError(String msg) {
         getLogger().log(Level.SEVERE, msg);
     }
@@ -87,6 +99,8 @@ public class PearResourceWorld extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
 
         pm.registerEvents(new PortalListener(this), this);
+        pm.registerEvents(new EntitySpawnListener(this), this);
+        pm.registerEvents(new WorldLoadListener(this), this);
     }
 
     public void updateTaskTimer() {
