@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import org.bukkit.World;
 
 public class NMSWorldUtils {
-    public static boolean generateEndSpawnPortal(World endWorld) {
+    public static boolean generateEndExitPortal(World endWorld) {
         try {
             Object craftWorld = endWorld;
             Method getHandleMethod = craftWorld.getClass().getMethod("getHandle");
@@ -20,6 +20,8 @@ public class NMSWorldUtils {
             if (battle == null) {
                 return false;
             }
+
+            // TO DO: call "private boolean i()" to check if portal is already generated
 
             Method generatePortalMethod = battle.getClass().getDeclaredMethod("a", boolean.class);
             generatePortalMethod.setAccessible(true);

@@ -10,9 +10,10 @@ import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.World.Environment;
 import org.bukkit.boss.DragonBattle;
+import org.bukkit.entity.EnderDragon;
 
 public class WorldUtils {
-    public static boolean generateEndSpawnPortal(World endWorld) {
+    public static boolean generateEndExitPortal(World endWorld) {
         DragonBattle dragonBattle = endWorld.getEnderDragonBattle();
 
         if (dragonBattle == null) {
@@ -32,35 +33,20 @@ public class WorldUtils {
         return false;
     }
 
-    public static boolean disableEndBattle(World endWorld) {
+    public static boolean removeEnderDragon(World endWorld) {
         DragonBattle dragonBattle = endWorld.getEnderDragonBattle();
         
         if (dragonBattle == null) {
             return false;
         }
 
-        if (dragonBattle.getEnderDragon() != null) {
-            dragonBattle.getEnderDragon().remove();
-            Bukkit.getLogger().info("Removed dragon at world: " + endWorld.getName());
+        EnderDragon enderDragon = dragonBattle.getEnderDragon();
+
+        if (enderDragon == null) {
+            return false;
         }
 
-        boolean portalGenerated = false;
-
-        try {
-            Method generateEndPortalMethod = dragonBattle.getClass().getMethod("generateEndPortal", boolean.class);
-            generateEndPortalMethod.invoke(dragonBattle, true);
-            portalGenerated = true;
-        } catch (NoSuchMethodException ex) {
-            Bukkit.getLogger().info("Generating end portal via NMS");
-            portalGenerated = NMSWorldUtils.generateEndSpawnPortal(endWorld);
-        } catch (Exception ex) {
-            Bukkit.getLogger().log(Level.SEVERE, ex.getMessage());
-        }
-        
-        if (portalGenerated) {
-            Bukkit.getLogger().info("Generated end portal");
-        }
-
+        enderDragon.remove();
         return true;
     }
 

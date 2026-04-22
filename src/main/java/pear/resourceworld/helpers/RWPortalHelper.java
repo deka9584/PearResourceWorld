@@ -21,15 +21,15 @@ public class RWPortalHelper {
         this.rwManager = plugin.getResourceWorldsManager();
     }
 
-    public boolean createEndSpawnPortal(World endWorld) {
+    public boolean activateEndExitPortal(World endWorld) {
         plugin.getLogger().info("Creating end spawn portal");
 
-        if (WorldUtils.generateEndSpawnPortal(endWorld)) {
+        if (WorldUtils.generateEndExitPortal(endWorld)) {
             plugin.getLogger().info("Created end spawn portal");
             return true;
         }
 
-        if (NMSWorldUtils.generateEndSpawnPortal(endWorld)) {
+        if (NMSWorldUtils.generateEndExitPortal(endWorld)) {
             plugin.getLogger().info("Created end spawn portal using NMS");
             return true;
         }

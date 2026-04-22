@@ -11,7 +11,6 @@ import pear.resourceworld.commands.ResourceWorldCommand;
 import pear.resourceworld.helpers.RWPortalHelper;
 import pear.resourceworld.listeners.EntitySpawnListener;
 import pear.resourceworld.listeners.PortalListener;
-import pear.resourceworld.listeners.WorldLoadListener;
 import pear.resourceworld.managers.DataFileManager;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
@@ -100,7 +99,6 @@ public class PearResourceWorld extends JavaPlugin {
 
         pm.registerEvents(new PortalListener(this), this);
         pm.registerEvents(new EntitySpawnListener(this), this);
-        pm.registerEvents(new WorldLoadListener(this), this);
     }
 
     public void updateTaskTimer() {

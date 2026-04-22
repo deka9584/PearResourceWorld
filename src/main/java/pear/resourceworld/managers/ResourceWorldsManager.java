@@ -106,18 +106,15 @@ public class ResourceWorldsManager {
             World world = plugin.getServer().getWorld(worldName);
 
             if (world == null) {
-                plugin.getLogger().info("Generating a new resource world: " + worldName);
+                if (!FileUtils.existDirectory(plugin.getServer().getWorldContainer().getPath(), worldName)) {
+                    plugin.getLogger().info("Resource world does not exists generating a new one");
+                    isNewWorld = true;
+                }
+                
+                plugin.getLogger().info("Loading resource world: " + worldName);
+                world = createRwWorld(resourceWorld);
 
-                world = WorldUtils.generateWorld(
-                    worldName,
-                    resourceWorldSettings.getCustomSeed(),
-                    env,
-                    WorldType.NORMAL,
-                    true
-                );
-
-                isNewWorld = true;
-                plugin.getLogger().info("Generated a new resource world: " + worldName);
+                plugin.getLogger().info("Loaded resource world: " + worldName);
             }
 
             resourceWorld.setWorld(world);
@@ -131,11 +128,12 @@ public class ResourceWorldsManager {
             plugin.getLogger().info("Loaded resource world: " + worldName);
         }
 
-        if (isNewWorld) {
+        finalizeWorldsLoad();
+
+        if (isNewWorld && resourceWorlds.size() > 0) {
+            plugin.getLogger().info("Created new worlds: " + String.join(", ", resourceWorlds.keySet()));
             plugin.getDataFileManager().setLastReset(LocalDate.now());
         }
-
-        resourceWorldReady = true;
     }
 
     public void resetWorlds() {
@@ -192,13 +190,7 @@ public class ResourceWorldsManager {
                             continue;
                         }
     
-                        World w = WorldUtils.generateWorld(
-                            rw.getName(),
-                            resourceWorldSettings.getCustomSeed(),
-                            rw.getEnvironment(),
-                            WorldType.NORMAL,
-                            true
-                        );
+                        World w = createRwWorld(rw);
     
                         rw.setWorld(w);
                         rw.updateWorldBorder();
@@ -206,6 +198,8 @@ public class ResourceWorldsManager {
 
                         plugin.debugLog("Generated world: " + rw.getName());
                     }
+
+                    finalizeWorldsLoad();
     
                     plugin.getDataFileManager().setLastReset(LocalDate.now());
                     plugin.getLogger().info("Resource worlds reset completed");
@@ -213,8 +207,6 @@ public class ResourceWorldsManager {
                     plugin.getServer().broadcastMessage(
                         plugin.getMessagesFileManager().getMessage("reset-completed")
                     );
-
-                    resourceWorldReady = true;
                 }, 160L);
             });
 
@@ -251,6 +243,41 @@ public class ResourceWorldsManager {
                 }
             }
         }
+    }
+
+    private World createRwWorld(ResourceWorld rw) {
+        Environment env = rw.getEnvironment();
+
+        World world = WorldUtils.generateWorld(
+            rw.getName(),
+            resourceWorldSettings.getCustomSeed(),
+            env,
+            WorldType.NORMAL,
+            true
+        );
+
+        return world;
+    }
+
+    private void finalizeWorldsLoad() {
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            
+            if (resourceWorldSettings.getDisableDragonBattle()) {
+                ResourceWorld rwEnd = resourceWorlds.get("end");
+
+                if (rwEnd != null && rwEnd.getWorld() != null) {
+                    World endW = rwEnd.getWorld();
+
+                    if (WorldUtils.removeEnderDragon(endW)) {
+                        plugin.debugLog("Removed ender dragon");
+                    }
+
+                    plugin.getRwPortalHelper().activateEndExitPortal(endW);
+                }
+            }
+
+            resourceWorldReady = true;
+        });
     }
 
     private Environment getConfigEnvironment(String key) {
