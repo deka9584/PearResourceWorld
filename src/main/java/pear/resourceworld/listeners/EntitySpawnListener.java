@@ -39,18 +39,16 @@ public class EntitySpawnListener implements Listener {
         if (rwSettings != null && rwSettings.getDisableDragonBattle()) {
             DragonBattle dragonBattle = world.getEnderDragonBattle();
 
-            if (dragonBattle == null) {
-                plugin.logWarn("Unable to prevent dragon spawn: DragonBattle is null: " + world.getName());
-                return;
+            if (dragonBattle != null) {
+                dragonBattle.getBossBar().setVisible(false);
             }
 
             event.setCancelled(true);
 
             // TO DO: Reset dragon battle
 
-            plugin.getLogger().info("Prevent dragon spawn on resource world");
-            
             plugin.getRwPortalHelper().activateEndExitPortal(world);
+            plugin.getLogger().info("Prevent dragon spawn on resource world");
         }
     }
 }

@@ -4,10 +4,13 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
+import org.bukkit.block.BlockState;
 import org.bukkit.World.Environment;
 import org.bukkit.boss.DragonBattle;
 import org.bukkit.entity.EnderDragon;
@@ -27,6 +30,22 @@ public class WorldUtils {
         } catch (Exception ex) {
             if (!(ex instanceof NoSuchMethodException)) {
                 ex.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
+    public static boolean hasEndExitPortal(World endWorld) {
+        for (int x = -8; x <= 8; x++) {
+            for (int z = -8; z <= 8; z++) {
+                Chunk chunk = endWorld.getChunkAt(x, z);
+
+                for (BlockState state : chunk.getTileEntities()) {
+                    if (state.getType() == Material.END_PORTAL) {
+                        return true;
+                    }
+                }
             }
         }
 

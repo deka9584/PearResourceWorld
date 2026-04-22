@@ -272,7 +272,11 @@ public class ResourceWorldsManager {
                         plugin.debugLog("Removed ender dragon");
                     }
 
-                    plugin.getRwPortalHelper().activateEndExitPortal(endW);
+                    if (!WorldUtils.hasEndExitPortal(endW)) {
+                        plugin.getRwPortalHelper().activateEndExitPortal(endW);
+                    } else {
+                        plugin.debugLog("End exit portal already activated");
+                    }
                 }
             }
 
