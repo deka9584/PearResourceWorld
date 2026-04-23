@@ -1,6 +1,7 @@
 package pear.resourceworld.listeners;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.PortalType;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
@@ -8,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
+import org.bukkit.event.world.PortalCreateEvent;
 
 import pear.resourceworld.PearResourceWorld;
 
@@ -19,6 +21,45 @@ public class PortalListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
+    public void onPortalCreate(PortalCreateEvent event) {
+        World world = event.getWorld();
+
+        if (!plugin.getResourceWorldsManager().isResourceWorld(world)) {
+            return;
+        }
+
+        PortalType portalType;
+
+        switch (event.getReason()) {
+            case FIRE:
+                portalType = event.getBlocks()
+                    .stream()
+                    .anyMatch(b -> b.getType() == Material.NETHER_PORTAL)
+                        ? PortalType.NETHER
+                        : PortalType.CUSTOM;
+                break;
+            case NETHER_PAIR:
+                portalType = PortalType.NETHER;
+                break;
+            case END_PLATFORM:
+                portalType = PortalType.ENDER;
+                break;
+            default:
+                portalType = PortalType.CUSTOM;
+        }
+
+        if (portalType == PortalType.CUSTOM) {
+            plugin.debugLog("Created a custom portal type in world: " + world.getName());
+            return;
+        }
+
+        if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
+            event.setCancelled(true);
+            plugin.debugLog("Prevented portal creation on world: " + world.getName());
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerPortal(PlayerPortalEvent event) {
         Location from = event.getFrom();
 
@@ -26,7 +67,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        PortalType portalType = null;
+        PortalType portalType;
 
         switch (event.getCause()) {
             case END_PORTAL:
@@ -36,7 +77,11 @@ public class PortalListener implements Listener {
                 portalType = PortalType.NETHER;
                 break;
             default:
-                return;
+                portalType = PortalType.CUSTOM;
+        }
+
+        if (portalType == PortalType.CUSTOM) {
+            plugin.debugLog("Player entered in a custom portal in world: " + from.getWorld().getName());
         }
 
         if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
@@ -75,7 +120,7 @@ public class PortalListener implements Listener {
 
         World fromWorld = from.getWorld();
         World toWorld = event.getTo().getWorld();
-        PortalType portalType = null;
+        PortalType portalType;
 
         if ((fromWorld.getEnvironment() == Environment.NETHER && toWorld.getEnvironment() == Environment.NORMAL) ||
             (fromWorld.getEnvironment() == Environment.NORMAL && toWorld.getEnvironment() == World.Environment.NETHER)) {
@@ -83,9 +128,12 @@ public class PortalListener implements Listener {
         } else if ((fromWorld.getEnvironment() == Environment.THE_END && toWorld.getEnvironment() == Environment.NORMAL) ||
             (fromWorld.getEnvironment() == Environment.NORMAL && toWorld.getEnvironment() == World.Environment.THE_END)) {
             portalType = PortalType.ENDER;
+        } else {
+            portalType = PortalType.CUSTOM;
         }
 
-        if (portalType == null) {
+        if (portalType == PortalType.CUSTOM) {
+            plugin.debugLog("Entity entered in a custom portal in world: " + fromWorld.getName());
             return;
         }
 
