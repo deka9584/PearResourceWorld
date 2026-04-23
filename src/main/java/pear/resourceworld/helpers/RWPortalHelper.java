@@ -70,38 +70,45 @@ public class RWPortalHelper {
 
         // Overworld -> nether
         if (fromEnv == Environment.NORMAL && portalType == PortalType.NETHER) {
-            ResourceWorld rw = rwManager.getResourceWorld("nether");
-            if (rw == null || rw.getWorld() == null) return null;
+            World dstWorld = getRwWorld("nether");
+            
+            if (dstWorld == null) {
+                return null;
+            }
 
-            World dstWorld = rw.getWorld();
             int x = (int) from.getX() / 8;
             int z = (int) from.getZ() / 8;
-            int y = Math.min((int) from.getY() / 2, 120);
+            int y = (int) Math.min(from.getY() / 2, 120);
 
             return new Location(dstWorld, x, y, z);
         }
 
         // Overworld -> end
         if (fromEnv == Environment.NORMAL && portalType == PortalType.ENDER) {
-            ResourceWorld rw = rwManager.getResourceWorld("end");
-            if (rw == null || rw.getWorld() == null) return null;
-            
-            return rw.getWorld().getSpawnLocation();
+            World dstWorld = getRwWorld("end");
+            return dstWorld != null ? dstWorld.getSpawnLocation() : null;
         }
 
         // Nether -> overworld
         if (fromEnv == Environment.NETHER && portalType == PortalType.NETHER) {
-            ResourceWorld rw = rwManager.getResourceWorld("overworld");
-            if (rw == null || rw.getWorld() == null) return null;
+            World dstWorld = getRwWorld("overworld");
+
+            if (dstWorld == null) {
+                return null;
+            }
             
-            World dstWorld = rw.getWorld();
             int x = (int) from.getX() * 8;
             int z = (int) from.getZ() * 8;
-            int y = (int) from.getY() * 2;
+            int y = (int) Math.min(from.getY() * 2, 240);
 
             return new Location(dstWorld, x, y, z);
         }
 
         return null;
+    }
+
+    private World getRwWorld(String dimName) {
+        ResourceWorld rw = rwManager.getResourceWorld(dimName);
+        return rw != null ? rw.getWorld() : null;
     }
 }
