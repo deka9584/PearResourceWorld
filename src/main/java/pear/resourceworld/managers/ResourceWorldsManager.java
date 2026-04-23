@@ -44,6 +44,10 @@ public class ResourceWorldsManager {
         return resourceWorldSettings;
     }
 
+    public World getSpawnWorld() {
+        return spawnWorld;
+    }
+
     public boolean isResourceWorld(World world) {
         for (ResourceWorld rw : resourceWorlds.values()) {
             if (rw.getName().equals(world.getName())) {
