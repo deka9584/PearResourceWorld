@@ -9,6 +9,7 @@ import org.bukkit.scheduler.BukkitTask;
 import pear.resourceworld.commands.ResourceWorldAdminCommand;
 import pear.resourceworld.commands.ResourceWorldCommand;
 import pear.resourceworld.helpers.RWPortalHelper;
+import pear.resourceworld.helpers.TeleportHelper;
 import pear.resourceworld.listeners.EntitySpawnListener;
 import pear.resourceworld.listeners.PlayerSpawnListener;
 import pear.resourceworld.listeners.PortalListener;
@@ -25,6 +26,7 @@ public class PearResourceWorld extends JavaPlugin {
     private DataFileManager dataFileManager;
     private MessagesFileManager messagesFileManager;
     private RWPortalHelper rwPortalHelper;
+    private TeleportHelper teleportHelper;
     private BukkitTask resetWorldsTask;
 
     // This code is called after the server starts and after the /reload command
@@ -39,16 +41,14 @@ public class PearResourceWorld extends JavaPlugin {
         resourceWorldsManager = new ResourceWorldsManager(this);
 
         rwPortalHelper = new RWPortalHelper(this);
+        teleportHelper = new TeleportHelper(this);
 
         dataFileManager.load();
         messagesFileManager.load();
         resourceWorldsManager.loadWorlds();
 
         getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
-        // getCommand("pearresourceworldadmin").setTabCompleter(new ResourceWorldAdminCommand(this));
-
         getCommand("pearresourceworld").setExecutor(new ResourceWorldCommand(this));
-        // getCommand("pearresourceworld").setTabCompleter(new ResourceWorldCommand(this));
 
         registerListeners();
         updateTaskTimer();
@@ -86,6 +86,10 @@ public class PearResourceWorld extends JavaPlugin {
 
     public RWPortalHelper getRwPortalHelper() {
         return rwPortalHelper;
+    }
+
+    public TeleportHelper getTeleportHelper() {
+        return teleportHelper;
     }
 
     public void logError(String msg) {
