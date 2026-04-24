@@ -15,6 +15,7 @@ public class ResourceWorldSettings {
     private boolean allowNetherPortals;
     private boolean allowEndPortals;
     private boolean disableDragonBattle;
+    private boolean disableBedRespawn;
 
     public ResourceWorldSettings(ConfigurationSection configSect) {
         this.teleportSpawnOnQuit = configSect.getBoolean("teleport-spawn-on-quit");
@@ -32,6 +33,7 @@ public class ResourceWorldSettings {
         this.allowNetherPortals = configSect.getBoolean("allow-nether-portals"); 
         this.allowEndPortals = configSect.getBoolean("allow-end-portals");
         this.disableDragonBattle = configSect.getBoolean("disable-dragon-battle");
+        this.disableBedRespawn = configSect.getBoolean("disable-bed-respawn");
     }
 
     public boolean getTeleportSpawnOnQuit() {
@@ -68,5 +70,9 @@ public class ResourceWorldSettings {
     
     public boolean getDisableDragonBattle() {
         return disableDragonBattle;
+    }
+
+    public boolean getDisableBedRespawn() {
+        return disableBedRespawn;
     }
 }

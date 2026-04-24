@@ -3,7 +3,6 @@ package pear.resourceworld.listeners;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import pear.resourceworld.PearResourceWorld;
@@ -26,17 +25,6 @@ public class TeleportListener implements Listener {
             event.setCancelled(true);
             player.sendMessage(plugin.getMessagesFileManager().getMessage("reset-in-progress"));
             plugin.debugLog("Prevented teleport in to world under reset from player: " + player.getName());
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        if (!rwManager.isResourceWorldReady() && rwManager.isResourceWorld(event.getRespawnLocation().getWorld())) {
-            Player player = event.getPlayer();
-
-            event.setRespawnLocation(rwManager.getSpawnWorld().getSpawnLocation());
-            player.sendMessage(plugin.getMessagesFileManager().getMessage("reset-in-progress"));
-            plugin.debugLog("Prevented respawn in to world under reset from player: " + player.getName());
         }
     }
 }
