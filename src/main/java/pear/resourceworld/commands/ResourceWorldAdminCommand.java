@@ -11,8 +11,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.util.StringUtil;
 
+import net.md_5.bungee.api.ChatColor;
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
@@ -22,7 +24,8 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         "tp",
         "reset",
         "kickall",
-        "time"
+        "time",
+        "help"
     };
 
     private final PearResourceWorld plugin;
@@ -44,7 +47,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             }
 
             if (args.length == 0) {
-                sender.sendMessage("Subcommands: " + String.join(",", subcommands));
+                sendHelp(sender);
                 return false;
             }
 
@@ -115,9 +118,15 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     );
 
                     return true;
+                
+                case "help":
+                    sendHelp(sender);
+                    return true;
 
                 default:
-                    sender.sendMessage(messagesFm.getMessage("invalid-subcommand"));
+                    sender.sendMessage(messagesFm.getMessage("invalid-subcommand")
+                        .replaceAll("%helpcmd%", "/" + command.getName() + " help")
+                    );
                     return false;
             }
         }
@@ -134,5 +143,12 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         }
 
         return completeSubCommand;
+    }
+
+    private void sendHelp(CommandSender sender) {
+        PluginDescriptionFile desc = plugin.getDescription();
+        String authors = String.join(", ", desc.getAuthors());
+        sender.sendMessage(ChatColor.GREEN + desc.getName() + " v." + desc.getVersion() + " by " + authors);
+        sender.sendMessage("Subcommands: " + String.join(", ", subcommands));
     }
 }
