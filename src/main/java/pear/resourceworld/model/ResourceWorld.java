@@ -58,7 +58,7 @@ public class ResourceWorld {
             return false;
         }
 
-        world.setPVP(settings.getPvp());
+        world.setPVP(settings.getPVP());
         world.setDifficulty(settings.getDifficulty());
 
         world.setGameRule(GameRule.KEEP_INVENTORY, settings.getKeepInventory());

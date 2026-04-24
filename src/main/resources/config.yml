@@ -17,7 +17,6 @@ resource-world-settings:
   allow-nether-portals: true # If resource nether is disabled portals will bring to the default one
   allow-end-portals: true # If resource end is disabled portals will bring to the default one
   disable-dragon-battle: true
-  disable-bed-respawn: true
 
 resource-dimensions:
   overworld:

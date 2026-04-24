@@ -15,6 +15,7 @@ import org.bukkit.WorldType;
 import org.bukkit.World.Environment;
 
 import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.ResourceWorld;
 import pear.resourceworld.model.ResourceWorldSettings;
 import pear.resourceworld.utils.FileUtils;
@@ -23,7 +24,7 @@ import pear.resourceworld.utils.WorldUtils;
 public class ResourceWorldsManager {
     private final PearResourceWorld plugin;
 
-    private HashMap<String, ResourceWorld> resourceWorlds = new HashMap<>();
+    private HashMap<RWDimension, ResourceWorld> resourceWorlds = new HashMap<>();
     private ResourceWorldSettings resourceWorldSettings;
     private World spawnWorld;
     private boolean resourceWorldReady = false;
@@ -36,7 +37,7 @@ public class ResourceWorldsManager {
         return plugin.getConfig().getBoolean("reset-with-players-online") || plugin.getServer().getOnlinePlayers().size() == 0;
     }
 
-    public ResourceWorld getResourceWorld(String dimension) {
+    public ResourceWorld getResourceWorld(RWDimension dimension) {
         return resourceWorlds.get(dimension);
     }
 
@@ -93,9 +94,9 @@ public class ResourceWorldsManager {
         resourceWorlds.clear();
 
         for (String key : dimensions.getKeys(false)) {
-            Environment env = getConfigEnvironment(key);
+            RWDimension dimension = RWDimension.getRwDimension(key);
 
-            if (env == null) {
+            if (dimension == null) {
                 plugin.logWarn("Invalid dimension:" + key);
                 continue;
             }
@@ -106,6 +107,7 @@ public class ResourceWorldsManager {
 
             String worldName = dimensions.getString(key + ".name");
             double border = dimensions.getDouble(key + ".border");
+            Environment env = dimension.getEnvironment();
             ResourceWorld resourceWorld = new ResourceWorld(worldName, env);
             World world = plugin.getServer().getWorld(worldName);
 
@@ -128,15 +130,18 @@ public class ResourceWorldsManager {
             }
 
             resourceWorld.updateWorldFlags(resourceWorldSettings);
-            resourceWorlds.put(key, resourceWorld);
+            resourceWorlds.put(dimension, resourceWorld);
             plugin.getLogger().info("Loaded resource world: " + worldName);
         }
 
         finalizeWorldsLoad();
 
         if (isNewWorld && resourceWorlds.size() > 0) {
-            plugin.getLogger().info("Created new worlds: " + String.join(", ", resourceWorlds.keySet()));
-            plugin.getDataFileManager().setLastReset(LocalDate.now());
+            plugin.getLogger().info("Created new resource world");
+            updateLastResetDate();
+        } else if (plugin.getDataFileManager().getLastReset() == null) {
+            plugin.logWarn("No last reset date found: setting current date");
+            updateLastResetDate();
         }
     }
 
@@ -204,8 +209,8 @@ public class ResourceWorldsManager {
                     }
 
                     finalizeWorldsLoad();
-    
-                    plugin.getDataFileManager().setLastReset(LocalDate.now());
+                    updateLastResetDate();
+                    
                     plugin.getLogger().info("Resource worlds reset completed");
 
                     plugin.getServer().broadcastMessage(
@@ -223,7 +228,7 @@ public class ResourceWorldsManager {
             return false;
         }
 
-        ResourceWorld resourceWorld = resourceWorlds.get("overworld");
+        ResourceWorld resourceWorld = resourceWorlds.get(RWDimension.OVERWORLD);
 
         if (resourceWorld == null || resourceWorld.getWorld() == null) {
             plugin.logError("Resourceworld overworld is not loaded");
@@ -267,7 +272,7 @@ public class ResourceWorldsManager {
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             
             if (resourceWorldSettings.getDisableDragonBattle()) {
-                ResourceWorld rwEnd = resourceWorlds.get("end");
+                ResourceWorld rwEnd = resourceWorlds.get(RWDimension.END);
 
                 if (rwEnd != null && rwEnd.getWorld() != null) {
                     World endW = rwEnd.getWorld();
@@ -288,16 +293,7 @@ public class ResourceWorldsManager {
         });
     }
 
-    private Environment getConfigEnvironment(String key) {
-        switch (key) {
-            case "overworld":
-                return Environment.NORMAL;
-            case "nether":
-                return Environment.NETHER;
-            case "end":
-                return Environment.THE_END;
-            default:
-                return null;
-        }
+    private void updateLastResetDate() {
+        plugin.getDataFileManager().setLastReset(LocalDate.now());;
     }
 }

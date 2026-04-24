@@ -9,7 +9,6 @@ import org.bukkit.event.entity.CreatureSpawnEvent;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.ResourceWorldsManager;
-import pear.resourceworld.model.ResourceWorldSettings;
 
 public class EntitySpawnListener implements Listener {
     private final PearResourceWorld plugin;
@@ -34,9 +33,7 @@ public class EntitySpawnListener implements Listener {
 
         plugin.debugLog("Server attempt to spawn dragon: " + event.getSpawnReason().name());
 
-        ResourceWorldSettings rwSettings = rwManager.getResourceWorldSettings();
-
-        if (rwSettings != null && rwSettings.getDisableDragonBattle()) {
+        if (rwManager.getResourceWorldSettings().getDisableDragonBattle()) {
             DragonBattle dragonBattle = world.getEnderDragonBattle();
 
             if (dragonBattle != null) {
@@ -44,9 +41,6 @@ public class EntitySpawnListener implements Listener {
             }
 
             event.setCancelled(true);
-
-            // TO DO: Reset dragon battle
-
             plugin.getRwPortalHelper().activateEndExitPortal(world);
             plugin.getLogger().info("Prevent dragon spawn on resource world");
         }

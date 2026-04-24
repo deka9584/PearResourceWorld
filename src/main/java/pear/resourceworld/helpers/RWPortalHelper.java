@@ -7,6 +7,7 @@ import org.bukkit.World.Environment;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.ResourceWorld;
 import pear.resourceworld.model.ResourceWorldSettings;
 import pear.resourceworld.utils.NMSWorldUtils;
@@ -24,12 +25,16 @@ public class RWPortalHelper {
     public boolean activateEndExitPortal(World endWorld) {
         plugin.getLogger().info("Creating end spawn portal");
 
-        if (WorldUtils.generateEndExitPortal(endWorld)) {
-            plugin.getLogger().info("Created end spawn portal");
-            return true;
+        if (WorldUtils.setDragonPreviouslyKilled(endWorld, true)) {
+            plugin.debugLog("Set dragon previously killed for world: " + endWorld.getName());
+
+            if (WorldUtils.generateEndExitPortal(endWorld)) {
+                plugin.getLogger().info("Created end spawn portal");
+                return true;
+            }
         }
 
-        if (NMSWorldUtils.generateEndExitPortal(endWorld)) {
+        if (NMSWorldUtils.generateEndExitPortal(endWorld, true)) {
             plugin.getLogger().info("Created end spawn portal using NMS");
             return true;
         }
@@ -70,7 +75,7 @@ public class RWPortalHelper {
 
         // Overworld -> nether
         if (fromEnv == Environment.NORMAL && portalType == PortalType.NETHER) {
-            World dstWorld = getRwWorld("nether");
+            World dstWorld = getRwWorld(RWDimension.NETHER);
             
             if (dstWorld == null) {
                 return null;
@@ -85,13 +90,13 @@ public class RWPortalHelper {
 
         // Overworld -> end
         if (fromEnv == Environment.NORMAL && portalType == PortalType.ENDER) {
-            World dstWorld = getRwWorld("end");
+            World dstWorld = getRwWorld(RWDimension.END);
             return dstWorld != null ? dstWorld.getSpawnLocation() : null;
         }
 
         // Nether -> overworld
         if (fromEnv == Environment.NETHER && portalType == PortalType.NETHER) {
-            World dstWorld = getRwWorld("overworld");
+            World dstWorld = getRwWorld(RWDimension.OVERWORLD);
 
             if (dstWorld == null) {
                 return null;
@@ -107,8 +112,8 @@ public class RWPortalHelper {
         return null;
     }
 
-    private World getRwWorld(String dimName) {
-        ResourceWorld rw = rwManager.getResourceWorld(dimName);
+    private World getRwWorld(RWDimension dim) {
+        ResourceWorld rw = rwManager.getResourceWorld(dim);
         return rw != null ? rw.getWorld() : null;
     }
 }

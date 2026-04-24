@@ -27,12 +27,12 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
 
     private final PearResourceWorld plugin;
     private final MessagesFileManager messagesFm;
-    private final ResourceWorldsManager resourceWorldsManager;
+    private final ResourceWorldsManager rwManager;
 
     public ResourceWorldAdminCommand(PearResourceWorld plugin) {
         this.plugin = plugin;
         this.messagesFm = plugin.getMessagesFileManager();
-        this.resourceWorldsManager = plugin.getResourceWorldsManager();
+        this.rwManager = plugin.getResourceWorldsManager();
     }
 
     @Override
@@ -58,12 +58,17 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     if (sender instanceof Player) {
                         Player player = (Player) sender;
 
-                        if (resourceWorldsManager.isResourceWorld(player.getWorld())) {
+                        if (!rwManager.isResourceWorldReady()) {
+                            sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
+                            return false;
+                        }
+
+                        if (rwManager.isResourceWorld(player.getWorld())) {
                             sender.sendMessage(messagesFm.getMessage("already-resource-world-self"));
                             return false;
                         }
 
-                        if (!resourceWorldsManager.teleportPlayerToResourceWorld(player)) {
+                        if (!rwManager.teleportPlayerToResourceWorld(player)) {
                             sender.sendMessage(messagesFm.getMessage("teleport-failed"));
                             return false;
                         }
@@ -81,7 +86,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    resourceWorldsManager.resetWorlds();
+                    rwManager.resetWorlds();
                     return true;
 
                 case "kickall":
@@ -90,7 +95,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    resourceWorldsManager.kickAllFromResourceWorld();
+                    rwManager.kickAllFromResourceWorld();
                     sender.sendMessage(messagesFm.getMessage("kicked-all-players-from-resource-world"));
                     return true;
 

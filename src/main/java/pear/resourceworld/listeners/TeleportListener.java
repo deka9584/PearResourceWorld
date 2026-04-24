@@ -23,7 +23,7 @@ public class TeleportListener implements Listener {
             Player player = event.getPlayer();
 
             event.setCancelled(true);
-            player.sendMessage(plugin.getMessagesFileManager().getMessage("reset-in-progress"));
+            player.sendMessage(plugin.getMessagesFileManager().getMessage("reset-still-in-progress"));
             plugin.debugLog("Prevented teleport in to world under reset from player: " + player.getName());
         }
     }

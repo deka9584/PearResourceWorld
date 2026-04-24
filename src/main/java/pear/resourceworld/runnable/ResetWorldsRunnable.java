@@ -23,7 +23,7 @@ public class ResetWorldsRunnable extends BukkitRunnable {
                 LocalDate lastReset = plugin.getDataFileManager().getLastReset();
                 LocalDate now = LocalDate.now();
         
-                if (!lastReset.plusDays(resetInterval).isAfter(now)) {
+                if (lastReset != null && !lastReset.plusDays(resetInterval).isAfter(now)) {
                     plugin.getResourceWorldsManager().resetWorlds();
                 }
             }

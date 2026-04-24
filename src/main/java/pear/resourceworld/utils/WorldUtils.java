@@ -17,15 +17,15 @@ import org.bukkit.entity.EnderDragon;
 
 public class WorldUtils {
     public static boolean generateEndExitPortal(World endWorld) {
-        DragonBattle dragonBattle = endWorld.getEnderDragonBattle();
+        DragonBattle battle = endWorld.getEnderDragonBattle();
 
-        if (dragonBattle == null) {
+        if (battle == null) {
             return false;
         }
 
         try {
-            Method generateEndPortalMethod = dragonBattle.getClass().getMethod("generateEndPortal", boolean.class);
-            generateEndPortalMethod.invoke(dragonBattle, true);
+            Method generateEndPortalMethod = battle.getClass().getMethod("generateEndPortal", boolean.class);
+            generateEndPortalMethod.invoke(battle, true);
             return true;
         } catch (Exception ex) {
             if (!(ex instanceof NoSuchMethodException)) {
@@ -53,13 +53,13 @@ public class WorldUtils {
     }
 
     public static boolean removeEnderDragon(World endWorld) {
-        DragonBattle dragonBattle = endWorld.getEnderDragonBattle();
+        DragonBattle battle = endWorld.getEnderDragonBattle();
         
-        if (dragonBattle == null) {
+        if (battle == null) {
             return false;
         }
 
-        EnderDragon enderDragon = dragonBattle.getEnderDragon();
+        EnderDragon enderDragon = battle.getEnderDragon();
 
         if (enderDragon == null) {
             return false;
@@ -67,6 +67,26 @@ public class WorldUtils {
 
         enderDragon.remove();
         return true;
+    }
+
+    public static boolean setDragonPreviouslyKilled(World endWorld, boolean flag) {
+        DragonBattle battle = endWorld.getEnderDragonBattle();
+
+        if (battle == null) {
+            return false;
+        }
+
+        try {
+            Method setPreviouslyKilledMethod = battle.getClass().getMethod("setPreviouslyKilled", boolean.class);
+            setPreviouslyKilledMethod.invoke(battle, flag);
+            return true;
+        } catch (Exception ex) {
+            if (!(ex instanceof NoSuchMethodException)) {
+                ex.printStackTrace();
+            }
+        }
+
+        return false;
     }
 
     public static World generateWorld(String name, String customSeed, Environment env, WorldType type, boolean generateStructures) {
