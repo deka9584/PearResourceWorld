@@ -16,4 +16,5 @@ unable-to-set-respawn: "%prefix% &cRespawn not set: You can't set respawn point 
 teleport-delay: "%prefix% &aYou will be teleported in %seconds% seconds"
 teleport-cancelled-moved: "%prefix% &cYou moved... Teleport cancelled!"
 teleport-success: "%prefix% &aYou have been teleported!"
+searching-safe-location: "%prefix% &aSearching a safe location to teleport!"
 no-safe-locaiton:  "%prefix% &cUnable to find a safe location!"

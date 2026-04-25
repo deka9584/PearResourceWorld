@@ -5,7 +5,7 @@ reset-interval: 30 # Reset interval in days
 # true: Players in the resource world will be teleported to the spawn
 # false: Wait when the server is empty
 reset-with-players-online: false
-teleport-radius: 200 # Random teleport radius (set 0 disable)
+teleport-range: 200 # Random teleport range (set 0 disable)
 teleport-delay: 5 # Teleport delay in seconds
 
 resource-world-settings:

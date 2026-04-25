@@ -30,7 +30,7 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
 
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                plugin.getTeleportHelper().teleportPlayerToResourceWorld(player);
+                plugin.getTeleportHelper().teleportToRwOverworld(player);
                 return true;
             }
         }
