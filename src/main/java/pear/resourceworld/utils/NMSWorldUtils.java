@@ -44,16 +44,14 @@ public class NMSWorldUtils {
 
             if (setDragonKilled) {
                 for (Field f : battle.getClass().getDeclaredFields()) {
-                    String name = f.getName().toLowerCase();
-
-                    if (name.equalsIgnoreCase("dragonkilled") || name.equals("k")) {
-                        f.setAccessible(true);
-                        f.setBoolean(battle, true);
-                    }
-
-                    if (name.equalsIgnoreCase("previouslykilled") || name.equals("l")) {
-                        f.setAccessible(true);
-                        f.setBoolean(battle, true);
+                    if (f.getType() == boolean.class) {
+                        String name = f.getName().toLowerCase();
+    
+                        if (name.equals("dragonkilled") || name.equals("k") ||
+                            name.equals("previouslykilled") || name.equals("l")) {
+                            f.setAccessible(true);
+                            f.setBoolean(battle, true);
+                        }
                     }
                 }
             }
