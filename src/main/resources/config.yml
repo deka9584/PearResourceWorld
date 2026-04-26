@@ -1,21 +1,35 @@
-spawn-world: "world" # The world that the player will Teleport to once a Reset Happens
+# The world that the player will Teleport to once a Reset Happens
+# or when they type the SPAWN subcommand
+spawn-world: "world"
+
+# Enable resource world autoreset
 auto-reset: true
-reset-interval: 30 # Reset interval in days
-# Resets the resource world if players are online in the server
+
+# Reset interval in days
+reset-interval: 30
+
+# Reset the resource world if players are online in the server
 # true: Players in the resource world will be teleported to the spawn
 # false: Wait when the server is empty
 reset-with-players-online: false
 
-teleport-range: 200 # Random teleport range (set 0 disable)
-teleport-delay: 5 # Teleport delay in seconds
-teleport-cooldown: 60 # Teleport cooldown in seconds
+# Random teleport range for resource world (set 0 disable)
+teleport-range: 200
 
-# If TRUE players with permission pearresourceworld.tp.delay.bypass can bypass the delay
+# Teleport delay in seconds
+teleport-delay: 5
+
+# Teleport to resource world cooldown in seconds
+teleport-cooldown: 60
+
+# With permission pearresourceworld.tp.delay.bypass will bypass the delay
 bypass-delay-permission: true
 
-# If TRUE players with permission pearresourceworld.tp.cooldown.bypass can bypass the delay
+# With permission pearresourceworld.tp.cooldown.bypass will bypass the cooldown
 bypass-cooldown-permission: true
 
+# Resource world settings
+# Valid difficulties: PEACEFUL, EASY, NORMAL, HARD
 resource-world-settings:
   teleport-spawn-on-quit: true
   disable-set-respawn: true
@@ -24,10 +38,12 @@ resource-world-settings:
   custom-seed: ""
   pvp: true
   always-day: false
-  allow-nether-portals: true # If resource nether is disabled portals will bring to the default one
-  allow-end-portals: true # If resource end is disabled portals will bring to the default one
+  allow-nether-portals: true 
+  allow-end-portals: true
   disable-dragon-battle: true
 
+# If resource nether/end is disabled and portals are enabled
+# they will bring to the nether/end dimension in the default world
 resource-dimensions:
   overworld:
     name: "world_resource"
