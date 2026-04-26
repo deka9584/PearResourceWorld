@@ -49,6 +49,11 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
                         return false;
                     }
 
+                    if (!plugin.getResourceWorldsManager().isResourceWorld(player.getWorld())) {
+                        player.sendMessage(messagesFm.getMessage("not-in-resource-world-self"));
+                        return true;
+                    }
+
                     plugin.getTeleportHelper().teleportToSpawn(player);
                     return true;
             
