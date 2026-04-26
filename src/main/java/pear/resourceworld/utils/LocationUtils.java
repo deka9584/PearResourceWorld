@@ -50,6 +50,16 @@ public class LocationUtils {
         return belowBlock.getType() != Material.CACTUS && !belowBlock.isLiquid();
     }
 
+    public static boolean isSamePosition(Location loc1, Location loc2) {
+        if (loc1 == null || loc2 == null || loc1.getWorld() != loc2.getWorld()) {
+            return false;
+        }
+
+        return loc1.getX() == loc2.getX()
+            && loc1.getY() == loc2.getY()
+            && loc1.getZ() == loc2.getZ();
+    }
+
     public static int getRandomInt(int min, int max) {
         return ThreadLocalRandom.current().nextInt(min, max + 1);
     }

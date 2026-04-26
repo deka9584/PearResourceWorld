@@ -45,12 +45,16 @@ public class TeleportHelper {
         int range = plugin.getConfig().getInt("teleport-range");
         int delay = plugin.getConfig().getInt("teleport-delay");
 
+        teleportToWorld(player, world, delay, range);
+    }
+    
+    public void teleportToWorld(Player player, World world, int delay, int range) {
         if (delay == 0) {
-            teleportSafely(player, world, range, 0);
+            teleportSafely(player, world, range, range);
             return;
         }
 
-        Location currLocation = player.getLocation();
+        Location playerLoc = player.getLocation();
 
         String teleportMsg = messagesFm.getMessage("teleport-delay")
             .replaceAll("%seconds%", String.valueOf(delay));
@@ -58,7 +62,7 @@ public class TeleportHelper {
         player.sendMessage(teleportMsg);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            if (player == null || !player.isOnline()) {
+            if (!player.isOnline()) {
                 plugin.debugLog("Player logged out: teleport cancelled");
                 return;
             }
@@ -68,7 +72,7 @@ public class TeleportHelper {
                 return;
             }
 
-            if (!player.getLocation().equals(currLocation)) {
+            if (!LocationUtils.isSamePosition(playerLoc, player.getLocation())) {
                 player.sendMessage(messagesFm.getMessage("teleport-cancelled-moved"));
                 return;
             }
@@ -77,7 +81,7 @@ public class TeleportHelper {
         }, 20 * delay);
     }
 
-    public void teleportSafely(Player player, World world, int range, int attempt) {
+    private void teleportSafely(Player player, World world, int range, int attempt) {
         Location spawnLocation = world.getSpawnLocation();
 
         if (range == 0) {
@@ -90,9 +94,15 @@ public class TeleportHelper {
             return;
         }
 
+        if (attempt > 50) {
+            plugin.logWarn("Unable to find a safe location to teleport player: " + player.getName());
+            player.sendMessage(messagesFm.getMessage("no-safe-locaiton"));
+            return;
+        }
+
         if (attempt == 0) {
             player.sendMessage(messagesFm.getMessage("searching-safe-location"));
-        }
+        } 
 
         int spawnX = spawnLocation.getBlockX();
         int spawnZ = spawnLocation.getBlockZ();
@@ -101,6 +111,11 @@ public class TeleportHelper {
         int randomZ = LocationUtils.getRandomInt(spawnZ - range, spawnZ + range);
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()) {
+                plugin.debugLog("Player logged out: teleport cancelled");
+                return;
+            }
+            
             world.getChunkAt(randomX, randomZ);
 
             int highestY = world.getHighestBlockYAt(randomX, randomZ) + 1;
@@ -110,18 +125,7 @@ public class TeleportHelper {
         });
     }
 
-    public void processLocationTeleport(Player player, Location loc, int range, int attempt) {
-        if (player == null || !player.isOnline()) {
-            plugin.debugLog("Player logged out: teleport cancelled");
-            return;
-        }
-
-        if (attempt > 50) {
-            plugin.logWarn("Unable to find a safe location to teleport player: " + player.getName());
-            player.sendMessage(messagesFm.getMessage("no-safe-locaiton"));
-            return;
-        }
-
+    private void processLocationTeleport(Player player, Location loc, int range, int attempt) {
         if (!LocationUtils.isLocationSafe(loc)) {
             teleportSafely(player, loc.getWorld(), range, attempt + 1);
             return;
