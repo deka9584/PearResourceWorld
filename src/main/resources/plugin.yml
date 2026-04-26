@@ -31,6 +31,9 @@ permissions:
   pearresourceworld.tp:
     description: Allows resource world tp command
     default: op
+  pearresourceworld.spawn:
+    description: Allows resource world SPAWN subcommand
+    default: op
   pearresourceworld.tp.delay.bypass:
     description: Allows to bypass teleport delay
     default: op

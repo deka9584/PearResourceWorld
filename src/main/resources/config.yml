@@ -5,9 +5,16 @@ reset-interval: 30 # Reset interval in days
 # true: Players in the resource world will be teleported to the spawn
 # false: Wait when the server is empty
 reset-with-players-online: false
+
 teleport-range: 200 # Random teleport range (set 0 disable)
 teleport-delay: 5 # Teleport delay in seconds
 teleport-cooldown: 60 # Teleport cooldown in seconds
+
+# If TRUE players with permission pearresourceworld.tp.delay.bypass can bypass the delay
+bypass-delay-permission: true
+
+# If TRUE players with permission pearresourceworld.tp.cooldown.bypass can bypass the delay
+bypass-cooldown-permission: true
 
 resource-world-settings:
   teleport-spawn-on-quit: true

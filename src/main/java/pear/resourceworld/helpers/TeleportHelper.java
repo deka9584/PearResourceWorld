@@ -31,7 +31,7 @@ public class TeleportHelper {
         this.cooldownManager = plugin.getCooldownManager();
     }
 
-    public void teleportToRwOverworld(Player player, boolean bypassDelay, boolean bypassCooldown) {
+    public void teleportToRwOverworld(Player player) {
         if (!rwManager.isResourceWorldReady()) {
             player.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
             return;
@@ -52,13 +52,57 @@ public class TeleportHelper {
         }
         
         int range = plugin.getConfig().getInt("teleport-range");
-        int delay = bypassDelay ? 0 : plugin.getConfig().getInt("teleport-delay");
+        
+        teleportToWorld(player, world, range);
+    }
 
-        teleportToWorld(player, world, delay, range, bypassCooldown);
+    public void teleportToSpawn(Player player) {
+        boolean bypassDelay = cooldownManager.canBypassDelay(player);
+        int delay = bypassDelay ? 0 : plugin.getConfig().getInt("teleport-delay");
+        Location spawnLoc = plugin.getResourceWorldsManager().getSpawnWorld().getSpawnLocation();
+
+        if (delay == 0) {
+            teleportPlayer(player, spawnLoc);
+            return;
+        }
+
+        UUID playerUUID = player.getUniqueId();
+
+        if (!teleportingPlayers.add(playerUUID)) {
+            return;
+        }
+
+        Location playerLoc = player.getLocation();
+
+        String teleportMsg = messagesFm.getMessage("teleport-delay")
+            .replaceAll("%seconds%", String.valueOf(delay));
+
+        player.sendMessage(teleportMsg);
+
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            teleportingPlayers.remove(playerUUID);
+
+            if (!player.isOnline()) {
+                plugin.debugLog("Player logged out: teleport cancelled");
+                return;
+            }
+
+            if (!LocationUtils.isSamePosition(playerLoc, player.getLocation())) {
+                player.sendMessage(messagesFm.getMessage("teleport-cancelled-moved"));
+                return;
+            }
+
+            teleportPlayer(player, spawnLoc);
+        }, 20 * delay);
     }
     
-    public void teleportToWorld(Player player, World world, int delay, int range, boolean bypassCooldown) {
+    public void teleportToWorld(Player player, World world, int range) {
         UUID playerUUID = player.getUniqueId();
+        
+        boolean bypassCooldown = cooldownManager.canBypassCooldown(player);
+        boolean bypassDelay = cooldownManager.canBypassDelay(player);
+
+        int delay = bypassDelay ? 0 : plugin.getConfig().getInt("teleport-delay");
         int cooldownSeconds = bypassCooldown ? 0 : cooldownManager.getTpRemainingSeconds(playerUUID);
 
         if (cooldownSeconds > 0) {
@@ -74,18 +118,16 @@ public class TeleportHelper {
             return;
         }
 
-        String teleportMsg = messagesFm.getMessage("teleport-delay")
-            .replaceAll("%seconds%", String.valueOf(delay));
-
-        if (teleportingPlayers.contains(playerUUID)) {
-            player.sendMessage(teleportMsg);
+        if (!teleportingPlayers.add(playerUUID)) {
             return;
         }
 
         Location playerLoc = player.getLocation();
 
+        String teleportMsg = messagesFm.getMessage("teleport-delay")
+            .replaceAll("%seconds%", String.valueOf(delay));
+
         player.sendMessage(teleportMsg);
-        teleportingPlayers.add(playerUUID);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             teleportingPlayers.remove(playerUUID);

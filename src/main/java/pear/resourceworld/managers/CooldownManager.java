@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.PearResourceWorld;
@@ -12,6 +13,8 @@ public class CooldownManager {
     private final PearResourceWorld plugin;
     private final Map<UUID, Long> cooldowns = new HashMap<>();
 
+    private boolean bypassCooldownPerm;
+    private boolean bypassDelayPerm;
     private long tpCooldownMillis;
     private BukkitTask cleanupCooldownsTask;
 
@@ -41,6 +44,14 @@ public class CooldownManager {
         if (tpCooldownMillis > 0) {
             cooldowns.put(playerUUID, System.currentTimeMillis());
         }
+    }
+
+    public boolean canBypassCooldown(Player player) {
+        return bypassCooldownPerm && player.hasPermission("pearresourceworld.tp.cooldown.bypass");
+    }
+
+    public boolean canBypassDelay(Player player) {
+        return bypassDelayPerm && player.hasPermission("pearresourceworld.tp.delay.bypass");
     }
 
     public int getTpRemainingSeconds(UUID playerUUID) {

@@ -20,7 +20,7 @@ import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
 
 public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter {
-    private static final String[] subcommands = {
+    private static final String[] SUBCOMMANDS = {
         "tp",
         "reset",
         "kickall",
@@ -124,7 +124,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     return true;
 
                 default:
-                    sender.sendMessage(messagesFm.getMessage("invalid-subcommand")
+                    sender.sendMessage(messagesFm.getMessage("invalid-admin-subcommand")
                         .replaceAll("%helpcmd%", "/" + command.getName() + " help")
                     );
                     return false;
@@ -139,7 +139,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         List<String> completeSubCommand = new ArrayList<>();
 
         if (args.length == 1) {
-            return StringUtil.copyPartialMatches(args[0], Arrays.asList(subcommands), completeSubCommand);
+            return StringUtil.copyPartialMatches(args[0], Arrays.asList(SUBCOMMANDS), completeSubCommand);
         }
 
         return completeSubCommand;
@@ -149,6 +149,6 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         PluginDescriptionFile desc = plugin.getDescription();
         String authors = String.join(", ", desc.getAuthors());
         sender.sendMessage(ChatColor.GREEN + desc.getName() + " v." + desc.getVersion() + " by " + authors);
-        sender.sendMessage("Subcommands: " + String.join(", ", subcommands));
+        sender.sendMessage("Subcommands: " + String.join(", ", SUBCOMMANDS));
     }
 }
