@@ -21,14 +21,19 @@ public class TeleportHelper {
     private final ResourceWorldsManager rwManager;
     private final MessagesFileManager messagesFm;
     private final CooldownManager cooldownManager;
-    private final Set<UUID> teleportingPlayers = new HashSet<>();
-    private final Set<UUID> searchingLocPlayer = new HashSet<>();
+    private final Set<UUID> activeTpDelays = new HashSet<>();
+    private final Set<UUID> activeTpSearches = new HashSet<>();
 
     public TeleportHelper(PearResourceWorld plugin) {
         this.plugin = plugin;
         this.rwManager = plugin.getResourceWorldsManager();
         this.messagesFm = plugin.getMessagesFileManager();
         this.cooldownManager = plugin.getCooldownManager();
+    }
+
+    public void handlePlayerQuit(UUID playerUUID) {
+        activeTpDelays.remove(playerUUID);
+        activeTpSearches.remove(playerUUID);
     }
 
     public void teleportToRwOverworld(Player player) {
@@ -68,7 +73,7 @@ public class TeleportHelper {
 
         UUID playerUUID = player.getUniqueId();
 
-        if (!teleportingPlayers.add(playerUUID)) {
+        if (!activeTpDelays.add(playerUUID)) {
             return;
         }
 
@@ -80,9 +85,7 @@ public class TeleportHelper {
         player.sendMessage(teleportMsg);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            teleportingPlayers.remove(playerUUID);
-
-            if (!player.isOnline()) {
+            if (!activeTpDelays.remove(playerUUID) || !player.isOnline()) {
                 plugin.debugLog("Player logged out: teleport cancelled");
                 return;
             }
@@ -98,7 +101,7 @@ public class TeleportHelper {
     
     public void teleportToWorld(Player player, World world, int range) {
         UUID playerUUID = player.getUniqueId();
-        
+
         boolean bypassCooldown = cooldownManager.canBypassCooldown(player);
         boolean bypassDelay = cooldownManager.canBypassDelay(player);
 
@@ -118,7 +121,7 @@ public class TeleportHelper {
             return;
         }
 
-        if (!teleportingPlayers.add(playerUUID)) {
+        if (!activeTpDelays.add(playerUUID)) {
             return;
         }
 
@@ -130,9 +133,7 @@ public class TeleportHelper {
         player.sendMessage(teleportMsg);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            teleportingPlayers.remove(playerUUID);
-
-            if (!player.isOnline()) {
+            if (!activeTpDelays.remove(playerUUID) || !player.isOnline()) {
                 plugin.debugLog("Player logged out: teleport cancelled");
                 return;
             }
@@ -180,7 +181,7 @@ public class TeleportHelper {
         }
 
         if (attempt == 0) {
-            if (!searchingLocPlayer.add(playerUUID)) {
+            if (!activeTpSearches.add(playerUUID)) {
                 plugin.debugLog("Prevent multiple location searches on same player");
                 return;
             }
@@ -196,7 +197,7 @@ public class TeleportHelper {
         int randomZ = LocationUtils.getRandomInt(spawnZ - range, spawnZ + range);
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {
-            if (!player.isOnline()) {
+            if (!activeTpSearches.contains(playerUUID) || !player.isOnline()) {
                 endLocationSearch(playerUUID);
                 return;
             }
@@ -218,7 +219,7 @@ public class TeleportHelper {
     }
 
     private void endLocationSearch(UUID playerUUID) {
-        searchingLocPlayer.remove(playerUUID);
+        activeTpSearches.remove(playerUUID);
         plugin.debugLog("End safe location search search");
     }
 
