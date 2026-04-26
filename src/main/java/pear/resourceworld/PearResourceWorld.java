@@ -14,6 +14,7 @@ import pear.resourceworld.listeners.EntitySpawnListener;
 import pear.resourceworld.listeners.PlayerSpawnListener;
 import pear.resourceworld.listeners.PortalListener;
 import pear.resourceworld.listeners.TeleportListener;
+import pear.resourceworld.managers.CooldownManager;
 import pear.resourceworld.managers.DataFileManager;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
@@ -22,9 +23,10 @@ import pear.resourceworld.runnable.ResetWorldsRunnable;
 public class PearResourceWorld extends JavaPlugin {
     private static PearResourceWorld plugin;
 
-    private ResourceWorldsManager resourceWorldsManager;
     private DataFileManager dataFileManager;
     private MessagesFileManager messagesFileManager;
+    private ResourceWorldsManager resourceWorldsManager;
+    private CooldownManager cooldownManager;
     private RWPortalHelper rwPortalHelper;
     private TeleportHelper teleportHelper;
     private BukkitTask resetWorldsTask;
@@ -39,6 +41,7 @@ public class PearResourceWorld extends JavaPlugin {
         dataFileManager = new DataFileManager(this);
         messagesFileManager = new MessagesFileManager(this);
         resourceWorldsManager = new ResourceWorldsManager(this);
+        cooldownManager = new CooldownManager(this);
 
         rwPortalHelper = new RWPortalHelper(this);
         teleportHelper = new TeleportHelper(this);
@@ -46,6 +49,7 @@ public class PearResourceWorld extends JavaPlugin {
         dataFileManager.load();
         messagesFileManager.load();
         resourceWorldsManager.loadWorlds();
+        cooldownManager.load();
 
         getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
         getCommand("pearresourceworld").setExecutor(new ResourceWorldCommand(this));
@@ -72,16 +76,20 @@ public class PearResourceWorld extends JavaPlugin {
         }
     }
 
-    public ResourceWorldsManager getResourceWorldsManager() {
-        return resourceWorldsManager;
-    }
-
     public DataFileManager getDataFileManager() {
         return dataFileManager;
     }
 
     public MessagesFileManager getMessagesFileManager() {
         return messagesFileManager;
+    }
+
+    public ResourceWorldsManager getResourceWorldsManager() {
+        return resourceWorldsManager;
+    }
+
+    public CooldownManager getCooldownManager() {
+        return cooldownManager;
     }
 
     public RWPortalHelper getRwPortalHelper() {

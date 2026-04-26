@@ -7,6 +7,7 @@ reset-interval: 30 # Reset interval in days
 reset-with-players-online: false
 teleport-range: 200 # Random teleport range (set 0 disable)
 teleport-delay: 5 # Teleport delay in seconds
+teleport-cooldown: 60 # Teleport cooldown in seconds
 
 resource-world-settings:
   teleport-spawn-on-quit: true

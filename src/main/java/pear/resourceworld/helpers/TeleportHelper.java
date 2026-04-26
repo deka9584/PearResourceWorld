@@ -1,10 +1,15 @@
 package pear.resourceworld.helpers;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.managers.CooldownManager;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
 import pear.resourceworld.model.RWDimension;
@@ -15,14 +20,18 @@ public class TeleportHelper {
     private final PearResourceWorld plugin;
     private final ResourceWorldsManager rwManager;
     private final MessagesFileManager messagesFm;
+    private final CooldownManager cooldownManager;
+    private final Set<UUID> teleportingPlayers = new HashSet<>();
+    private final Set<UUID> searchingLocPlayer = new HashSet<>();
 
     public TeleportHelper(PearResourceWorld plugin) {
         this.plugin = plugin;
         this.rwManager = plugin.getResourceWorldsManager();
         this.messagesFm = plugin.getMessagesFileManager();
+        this.cooldownManager = plugin.getCooldownManager();
     }
 
-    public void teleportToRwOverworld(Player player) {
+    public void teleportToRwOverworld(Player player, boolean bypassDelay, boolean bypassCooldown) {
         if (!rwManager.isResourceWorldReady()) {
             player.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
             return;
@@ -43,31 +52,50 @@ public class TeleportHelper {
         }
         
         int range = plugin.getConfig().getInt("teleport-range");
-        int delay = plugin.getConfig().getInt("teleport-delay");
+        int delay = bypassDelay ? 0 : plugin.getConfig().getInt("teleport-delay");
 
-        teleportToWorld(player, world, delay, range);
+        teleportToWorld(player, world, delay, range, bypassCooldown);
     }
     
-    public void teleportToWorld(Player player, World world, int delay, int range) {
+    public void teleportToWorld(Player player, World world, int delay, int range, boolean bypassCooldown) {
+        UUID playerUUID = player.getUniqueId();
+        int cooldownSeconds = bypassCooldown ? 0 : cooldownManager.getTpRemainingSeconds(playerUUID);
+
+        if (cooldownSeconds > 0) {
+            player.sendMessage(
+                messagesFm.getMessage("teleport-cooldown")
+                    .replaceAll("%seconds%", String.valueOf(cooldownSeconds))
+            );
+            return;
+        }
+        
         if (delay == 0) {
-            teleportSafely(player, world, range, range);
+            teleportSafely(player, world, range, 0);
+            return;
+        }
+
+        String teleportMsg = messagesFm.getMessage("teleport-delay")
+            .replaceAll("%seconds%", String.valueOf(delay));
+
+        if (teleportingPlayers.contains(playerUUID)) {
+            player.sendMessage(teleportMsg);
             return;
         }
 
         Location playerLoc = player.getLocation();
 
-        String teleportMsg = messagesFm.getMessage("teleport-delay")
-            .replaceAll("%seconds%", String.valueOf(delay));
-
         player.sendMessage(teleportMsg);
+        teleportingPlayers.add(playerUUID);
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            teleportingPlayers.remove(playerUUID);
+
             if (!player.isOnline()) {
                 plugin.debugLog("Player logged out: teleport cancelled");
                 return;
             }
 
-            if (!rwManager.isResourceWorldReady()) {
+            if (rwManager.isResourceWorld(world) && !rwManager.isResourceWorldReady()) {
                 player.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
                 return;
             }
@@ -77,11 +105,26 @@ public class TeleportHelper {
                 return;
             }
 
+            cooldownManager.addTpCooldown(playerUUID);
             teleportSafely(player, world, range, 0);
         }, 20 * delay);
     }
 
     private void teleportSafely(Player player, World world, int range, int attempt) {
+        UUID playerUUID = player.getUniqueId();
+
+        if (attempt > 50) {
+            endLocationSearch(playerUUID);
+            plugin.logWarn("Unable to find a safe location to teleport player: " + player.getName());
+            player.sendMessage(messagesFm.getMessage("no-safe-locaiton"));
+            return;
+        }
+
+        if (!player.isOnline()) {
+            endLocationSearch(playerUUID);
+            return;
+        }
+        
         Location spawnLocation = world.getSpawnLocation();
 
         if (range == 0) {
@@ -94,15 +137,15 @@ public class TeleportHelper {
             return;
         }
 
-        if (attempt > 50) {
-            plugin.logWarn("Unable to find a safe location to teleport player: " + player.getName());
-            player.sendMessage(messagesFm.getMessage("no-safe-locaiton"));
-            return;
-        }
-
         if (attempt == 0) {
+            if (!searchingLocPlayer.add(playerUUID)) {
+                plugin.debugLog("Prevent multiple location searches on same player");
+                return;
+            }
+            
+            plugin.debugLog("Searching safe location for player: " + player.getName());
             player.sendMessage(messagesFm.getMessage("searching-safe-location"));
-        } 
+        }
 
         int spawnX = spawnLocation.getBlockX();
         int spawnZ = spawnLocation.getBlockZ();
@@ -112,25 +155,32 @@ public class TeleportHelper {
 
         plugin.getServer().getScheduler().runTask(plugin, () -> {
             if (!player.isOnline()) {
-                plugin.debugLog("Player logged out: teleport cancelled");
+                endLocationSearch(playerUUID);
                 return;
             }
-            
-            world.getChunkAt(randomX, randomZ);
 
             int highestY = world.getHighestBlockYAt(randomX, randomZ) + 1;
             Location randomLoc = new Location(world, randomX, highestY, randomZ);
 
-            processLocationTeleport(player, randomLoc, range, attempt);
+            if (LocationUtils.isLocationSafe(randomLoc)) {
+                endLocationSearch(playerUUID);
+                teleportPlayer(player, randomLoc);
+                plugin.debugLog("Safe location found in attempt: " + attempt);
+                return;
+            }
+
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                teleportSafely(player, world, range, attempt + 1);
+            }, 1L);
         });
     }
 
-    private void processLocationTeleport(Player player, Location loc, int range, int attempt) {
-        if (!LocationUtils.isLocationSafe(loc)) {
-            teleportSafely(player, loc.getWorld(), range, attempt + 1);
-            return;
-        }
+    private void endLocationSearch(UUID playerUUID) {
+        searchingLocPlayer.remove(playerUUID);
+        plugin.debugLog("End safe location search search");
+    }
 
+    private void teleportPlayer(Player player, Location loc) {
         if (player.teleport(loc)) {
             player.sendMessage(messagesFm.getMessage("teleport-success"));
             return;

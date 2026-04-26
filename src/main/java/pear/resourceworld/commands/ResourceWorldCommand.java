@@ -30,7 +30,9 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
 
             if (sender instanceof Player) {
                 Player player = (Player) sender;
-                plugin.getTeleportHelper().teleportToRwOverworld(player);
+                boolean bypassDelay = player.hasPermission(command.getPermission() + ".delay.bypass");
+                boolean bypassCooldown = player.hasPermission(command.getPermission() + ".cooldown.bypass");
+                plugin.getTeleportHelper().teleportToRwOverworld(player, bypassDelay, bypassCooldown);
                 return true;
             }
         }

@@ -16,6 +16,24 @@ permissions:
   pearresourceworld.admin:
     description: Allows admin command
     default: op
+  pearresourceworld.admin.tp:
+    description: Allows admin TP subcommand
+    default: op
+  pearresourceworld.admin.reset:
+    description: Allows admin RESET subcommand
+    default: op
+  pearresourceworld.admin.kickall:
+    description: Allows admin KICKALL subcommand
+    default: op
+  pearresourceworld.admin.time:
+    description: Allows admin TIME subcommand
+    default: op
   pearresourceworld.tp:
     description: Allows resource world tp command
+    default: op
+  pearresourceworld.tp.delay.bypass:
+    description: Allows to bypass teleport delay
+    default: op
+  pearresourceworld.tp.cooldown.bypass:
+    description: Allows to bypass teleport cooldown
     default: op
