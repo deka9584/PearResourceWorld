@@ -18,6 +18,7 @@ import pear.resourceworld.managers.CooldownManager;
 import pear.resourceworld.managers.DataFileManager;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.managers.TeleportManager;
 import pear.resourceworld.runnable.ResetWorldsRunnable;
 
 public class PearResourceWorld extends JavaPlugin {
@@ -27,6 +28,7 @@ public class PearResourceWorld extends JavaPlugin {
     private MessagesFileManager messagesFileManager;
     private ResourceWorldsManager resourceWorldsManager;
     private CooldownManager cooldownManager;
+    private TeleportManager teleportManager;
     private RWPortalHelper rwPortalHelper;
     private TeleportHelper teleportHelper;
     private BukkitTask resetWorldsTask;
@@ -42,6 +44,7 @@ public class PearResourceWorld extends JavaPlugin {
         messagesFileManager = new MessagesFileManager(this);
         resourceWorldsManager = new ResourceWorldsManager(this);
         cooldownManager = new CooldownManager(this);
+        teleportManager = new TeleportManager(this);
 
         rwPortalHelper = new RWPortalHelper(this);
         teleportHelper = new TeleportHelper(this);
@@ -50,6 +53,7 @@ public class PearResourceWorld extends JavaPlugin {
         messagesFileManager.load();
         resourceWorldsManager.loadWorlds();
         cooldownManager.load();
+        teleportManager.load();
 
         getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
         getCommand("pearresourceworld").setExecutor(new ResourceWorldCommand(this));
@@ -90,6 +94,10 @@ public class PearResourceWorld extends JavaPlugin {
 
     public CooldownManager getCooldownManager() {
         return cooldownManager;
+    }
+
+    public TeleportManager getTeleportManager() {
+        return teleportManager;
     }
 
     public RWPortalHelper getRwPortalHelper() {

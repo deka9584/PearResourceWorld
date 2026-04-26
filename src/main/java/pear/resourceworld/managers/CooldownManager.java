@@ -14,7 +14,6 @@ public class CooldownManager {
     private final Map<UUID, Long> cooldowns = new HashMap<>();
 
     private boolean bypassCooldownPerm;
-    private boolean bypassDelayPerm;
     private long tpCooldownMillis;
     private BukkitTask cleanupCooldownsTask;
 
@@ -23,6 +22,7 @@ public class CooldownManager {
     }
 
     public void load() {
+        bypassCooldownPerm = plugin.getConfig().getBoolean("bypass-cooldown-permission");
         tpCooldownMillis = plugin.getConfig().getInt("teleport-cooldown") * 1000L;
 
         if (cleanupCooldownsTask != null && !cleanupCooldownsTask.isCancelled()) {
@@ -50,11 +50,13 @@ public class CooldownManager {
         return bypassCooldownPerm && player.hasPermission("pearresourceworld.tp.cooldown.bypass");
     }
 
-    public boolean canBypassDelay(Player player) {
-        return bypassDelayPerm && player.hasPermission("pearresourceworld.tp.delay.bypass");
-    }
+    public int getTpRemainingSeconds(Player player) {
+        if (canBypassCooldown(player)) {
+            return 0;
+        }
 
-    public int getTpRemainingSeconds(UUID playerUUID) {
+        UUID playerUUID = player.getUniqueId();
+
         if (cooldowns.containsKey(playerUUID)) {
             long now = System.currentTimeMillis();
             long lastUse = cooldowns.get(playerUUID);

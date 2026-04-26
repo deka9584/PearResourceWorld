@@ -77,7 +77,7 @@ public class PlayerSpawnListener implements Listener {
         Player player = event.getPlayer();
         Location loc = player.getLocation();
 
-        plugin.getTeleportHelper().handlePlayerQuit(player.getUniqueId());
+        plugin.getTeleportManager().handlePlayerQuit(player.getUniqueId());
 
         if (loc == null || !rwManager.isResourceWorld(loc.getWorld())) {
             return;
