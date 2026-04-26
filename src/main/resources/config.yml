@@ -1,4 +1,4 @@
-# The world that the player will Teleport to once a Reset Happens
+# Players will teleported to this world when a reset happens
 # or when they type the SPAWN subcommand
 spawn-world: "world"
 
