@@ -30,6 +30,7 @@ bypass-cooldown-permission: true
 
 # Resource world settings
 # Valid difficulties: PEACEFUL, EASY, NORMAL, HARD
+# Valid world types: DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, BUFFET
 resource-world-settings:
   teleport-spawn-on-quit: true
   disable-set-respawn: true
@@ -41,6 +42,8 @@ resource-world-settings:
   allow-nether-portals: true 
   allow-end-portals: true
   disable-dragon-battle: true
+  world-type: DEFAULT
+  generate-structures: true
 
 # If resource nether/end is disabled and portals are enabled
 # they will bring to the nether/end dimension in the default world

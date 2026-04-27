@@ -1,6 +1,7 @@
 package pear.resourceworld.model;
 
 import org.bukkit.Difficulty;
+import org.bukkit.WorldType;
 import org.bukkit.configuration.ConfigurationSection;
 
 import pear.resourceworld.utils.WorldUtils;
@@ -16,6 +17,8 @@ public class ResourceWorldSettings {
     private boolean allowNetherPortals;
     private boolean allowEndPortals;
     private boolean disableDragonBattle;
+    private WorldType worldType;
+    private boolean generateStructures;
 
     public ResourceWorldSettings(ConfigurationSection configSect) {
         this.teleportSpawnOnQuit = configSect.getBoolean("teleport-spawn-on-quit");
@@ -34,6 +37,14 @@ public class ResourceWorldSettings {
         this.allowNetherPortals = configSect.getBoolean("allow-nether-portals"); 
         this.allowEndPortals = configSect.getBoolean("allow-end-portals");
         this.disableDragonBattle = configSect.getBoolean("disable-dragon-battle");
+        
+        this.worldType = WorldType.getByName(configSect.getString("world-type"));
+
+        if (this.worldType == null) {
+            this.worldType = WorldType.NORMAL;
+        }
+
+        this.generateStructures = configSect.getBoolean("generate-structures");
     }
 
     public boolean getTeleportSpawnOnQuit() {
@@ -74,5 +85,13 @@ public class ResourceWorldSettings {
 
     public boolean getDisableSetRespawn() {
         return disableSetRespawn;
+    }
+
+    public WorldType getWorldType() {
+        return worldType;
+    }
+
+    public boolean getGenerateStructures() {
+        return generateStructures;
     }
 }

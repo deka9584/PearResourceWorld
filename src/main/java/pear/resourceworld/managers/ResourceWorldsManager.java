@@ -11,7 +11,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.World;
-import org.bukkit.WorldType;
 import org.bukkit.World.Environment;
 
 import pear.resourceworld.PearResourceWorld;
@@ -261,8 +260,8 @@ public class ResourceWorldsManager {
             rw.getName(),
             resourceWorldSettings.getCustomSeed(),
             env,
-            WorldType.NORMAL,
-            true
+            resourceWorldSettings.getWorldType(),
+            resourceWorldSettings.getGenerateStructures()
         );
 
         return world;
