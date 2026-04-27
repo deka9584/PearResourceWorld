@@ -50,46 +50,17 @@ public class TeleportHelper {
             return;
         }
         
-        teleportToWorld(player, world, teleportManager.getRtpRange());
+        delayedTeleport(player, world.getSpawnLocation(), teleportManager.getRtpRange(), true);
     }
 
     public void teleportToSpawn(Player player) {
         Location spawnLoc = plugin.getResourceWorldsManager().getSpawnWorld().getSpawnLocation();
-        int delay = teleportManager.getTpDelay(player);
-
-        if (delay == 0) {
-            teleportPlayer(player, spawnLoc);
-            return;
-        }
-
-        UUID playerUUID = player.getUniqueId();
-
-        if (!teleportManager.addActiveDelay(playerUUID)) {
-            return;
-        }
-
-        Location playerLoc = player.getLocation();
-
-        sendTeleportDelayMsg(player, delay);
-
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            if (!teleportManager.removeActiveDelay(playerUUID)) {
-                plugin.debugLog("Player logged out: teleport cancelled");
-                return;
-            }
-
-            if (!LocationUtils.isSamePosition(playerLoc, player.getLocation())) {
-                player.sendMessage(messagesFm.getMessage("teleport-cancelled-moved"));
-                return;
-            }
-
-            teleportPlayer(player, spawnLoc);
-        }, 20 * delay);
+        delayedTeleport(player, spawnLoc, 0, false);
     }
-    
-    public void teleportToWorld(Player player, World world, int range) {
-        int delay = teleportManager.getTpDelay(player);
-        int cooldownSeconds = cooldownManager.getTpRemainingSeconds(player);
+
+    public void delayedTeleport(Player player, Location destination, int range, boolean useCooldown) {
+        int delay = teleportManager.getTpDelay();
+        int cooldownSeconds = useCooldown ? cooldownManager.getTpRemainingSeconds(player) : 0;
 
         if (cooldownSeconds > 0) {
             player.sendMessage(
@@ -98,9 +69,9 @@ public class TeleportHelper {
             );
             return;
         }
-        
+
         if (delay == 0) {
-            teleportSafely(player, world, range, 0);
+            teleportSafely(player, destination, range, cooldownSeconds);
             return;
         }
 
@@ -112,7 +83,10 @@ public class TeleportHelper {
 
         Location playerLoc = player.getLocation();
 
-        sendTeleportDelayMsg(player, delay);
+        player.sendMessage(
+            messagesFm.getMessage("teleport-delay")
+                .replaceAll("%seconds%", String.valueOf(delay))
+        );
 
         plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (!teleportManager.removeActiveDelay(playerUUID)) { 
@@ -120,8 +94,8 @@ public class TeleportHelper {
                 return;
             }
 
-            if (rwManager.isResourceWorld(world) && !rwManager.isResourceWorldReady()) {
-                player.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
+            if (!isDestinationWorldReady(destination)) {
+                plugin.debugLog("Teleport cancelled: world not loaded");
                 return;
             }
 
@@ -130,19 +104,15 @@ public class TeleportHelper {
                 return;
             }
 
-            cooldownManager.addTpCooldown(playerUUID);
-            teleportSafely(player, world, range, 0);
+            if (useCooldown) {
+                cooldownManager.addTpCooldown(playerUUID);
+            }
+
+            teleportSafely(player, destination, range, 0);
         }, 20 * delay);
     }
 
-    private void sendTeleportDelayMsg(Player player, int delay) {
-        player.sendMessage(
-            messagesFm.getMessage("teleport-delay")
-                .replaceAll("%seconds%", String.valueOf(delay))
-        );
-    }
-
-    private void teleportSafely(Player player, World world, int range, int attempt) {
+    private void teleportSafely(Player player, Location destination, int range, int attempt) {
         UUID playerUUID = player.getUniqueId();
 
         if (attempt > 50) {
@@ -156,11 +126,9 @@ public class TeleportHelper {
             teleportManager.endLocationSearch(playerUUID);
             return;
         }
-        
-        Location spawnLocation = world.getSpawnLocation();
 
         if (range == 0) {
-            teleportPlayer(player, spawnLocation);
+            teleportPlayer(player, destination);
             return;
         }
 
@@ -174,8 +142,8 @@ public class TeleportHelper {
             player.sendMessage(messagesFm.getMessage("searching-safe-location"));
         }
 
-        int spawnX = spawnLocation.getBlockX();
-        int spawnZ = spawnLocation.getBlockZ();
+        int spawnX = destination.getBlockX();
+        int spawnZ = destination.getBlockZ();
 
         int randomX = LocationUtils.getRandomInt(spawnX - range, spawnX + range);
         int randomZ = LocationUtils.getRandomInt(spawnZ - range, spawnZ + range);
@@ -185,6 +153,13 @@ public class TeleportHelper {
                 return;
             }
 
+            if (!isDestinationWorldReady(destination)) {
+                teleportManager.endLocationSearch(playerUUID);
+                plugin.debugLog("Teleport cancelled: world not loaded");
+                return;
+            }
+
+            World world = destination.getWorld();
             int highestY = world.getHighestBlockYAt(randomX, randomZ) + 1;
             Location randomLoc = new Location(world, randomX, highestY, randomZ);
 
@@ -196,7 +171,7 @@ public class TeleportHelper {
             }
 
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                teleportSafely(player, world, range, attempt + 1);
+                teleportSafely(player, destination, range, attempt + 1);
             }, 1L);
         });
     }
@@ -208,5 +183,17 @@ public class TeleportHelper {
         }
 
         player.sendMessage(messagesFm.getMessage("teleport-failed"));
+    }
+
+    private boolean isDestinationWorldReady(Location dest) {
+        if (!dest.isWorldLoaded()) {
+            return false;
+        }
+
+        if (!rwManager.isResourceWorldReady() && rwManager.isResourceWorld(dest.getWorld())) {
+            return false;
+        }
+
+        return true;
     }
 }
