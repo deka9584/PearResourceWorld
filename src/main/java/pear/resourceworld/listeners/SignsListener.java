@@ -125,7 +125,6 @@ public class SignsListener implements Listener {
 
         for (int i = 0; i + 1 < event.getLines().length && i < newLines.size(); i++) {
             event.setLine(i + 1, newLines.get(i));
-            plugin.debugLog(newLines.get(i));
         }
     }
 }

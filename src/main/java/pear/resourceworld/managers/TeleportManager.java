@@ -61,15 +61,18 @@ public class TeleportManager {
         return fromSign ? signTpDelay : tpDelay;
     }
 
-    public void handlePlayerQuit(UUID playerUUID) {
-        BukkitTask delayTask = activeDelays.remove(playerUUID);
-
-        if (delayTask != null && !delayTask.isCancelled()) {
-            delayTask.cancel();
-            plugin.debugLog("Player logged out: teleport delay cancelled");
-        }
-
+    public void stopTeleportTasks(UUID playerUUID) {
+        endTeleportDelay(playerUUID);
         endLocationSearch(playerUUID);
+    }
+
+    public void endTeleportDelay(UUID playerUUID) {
+        BukkitTask task = activeDelays.remove(playerUUID);
+
+        if (task != null && !task.isCancelled()) {
+            task.cancel();
+            plugin.debugLog("End teleport delay");
+        }
     }
 
     public void endLocationSearch(UUID playerUUID) {
@@ -77,7 +80,7 @@ public class TeleportManager {
 
         if (task != null && !task.isCancelled()) {
             task.cancel();
-            plugin.debugLog("End safe location search search");
+            plugin.debugLog("End safe location search");
         }
     }
 

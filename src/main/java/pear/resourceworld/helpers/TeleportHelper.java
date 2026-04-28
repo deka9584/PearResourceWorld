@@ -182,7 +182,7 @@ public class TeleportHelper {
             }
 
             teleportSafely(player, destination, range, attempt + 1);
-        }, 20);
+        }, 10);
 
         teleportManager.addActiveSearch(playerUUID, task);
     }

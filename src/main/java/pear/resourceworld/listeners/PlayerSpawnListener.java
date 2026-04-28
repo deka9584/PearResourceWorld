@@ -49,6 +49,8 @@ public class PlayerSpawnListener implements Listener {
         Player player = event.getEntity();
         Location bedLoc = player.getBedSpawnLocation();
 
+        plugin.getTeleportManager().stopTeleportTasks(player.getUniqueId());
+
         if (bedLoc == null || !rwManager.isResourceWorld(bedLoc.getWorld())) {
             return;
         }
@@ -77,7 +79,7 @@ public class PlayerSpawnListener implements Listener {
         Player player = event.getPlayer();
         Location loc = player.getLocation();
 
-        plugin.getTeleportManager().handlePlayerQuit(player.getUniqueId());
+        plugin.getTeleportManager().stopTeleportTasks(player.getUniqueId());
 
         if (loc == null || !rwManager.isResourceWorld(loc.getWorld())) {
             return;
