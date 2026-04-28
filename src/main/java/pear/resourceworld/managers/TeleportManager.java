@@ -17,6 +17,7 @@ public class TeleportManager {
 
     private int rtpRange;
     private int tpDelay;
+    private int signTpDelay;
     private boolean bypassDelayPerm;
 
     public TeleportManager(PearResourceWorld plugin) {
@@ -28,6 +29,7 @@ public class TeleportManager {
 
         rtpRange = config.getInt("teleport-range");
         tpDelay = config.getInt("teleport-delay");
+        signTpDelay = config.getInt("signs-teleport-delay");
         bypassDelayPerm = config.getBoolean("bypass-delay-permission");
     }
 
@@ -51,8 +53,12 @@ public class TeleportManager {
         return tpDelay;
     }
 
-    public int getTpDelay(Player player) {
-        return canBypassDelay(player) ? 0 : tpDelay;
+    public int getTpDelay(Player player, boolean fromSign) {
+        if (player != null && canBypassDelay(player)) {
+            return 0;
+        }
+
+        return fromSign ? signTpDelay : tpDelay;
     }
 
     public void handlePlayerQuit(UUID playerUUID) {

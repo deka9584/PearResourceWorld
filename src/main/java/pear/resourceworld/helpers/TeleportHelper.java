@@ -15,6 +15,7 @@ import pear.resourceworld.managers.TeleportManager;
 import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.ResourceWorld;
 import pear.resourceworld.utils.LocationUtils;
+import pear.resourceworld.utils.Utils;
 
 public class TeleportHelper {
     private final PearResourceWorld plugin;
@@ -31,7 +32,15 @@ public class TeleportHelper {
         this.teleportManager = plugin.getTeleportManager();
     }
 
-    public void teleportToRwOverworld(Player player) {
+    public void signTeleport(Player player) {
+        if (rwManager.isResourceWorld(player.getWorld())) {
+            teleportToSpawn(player, true);
+        } else {
+            teleportToRwOverworld(player, true);
+        }
+    }
+
+    public void teleportToRwOverworld(Player player, boolean fromSign) {
         if (!rwManager.isResourceWorldReady()) {
             player.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
             return;
@@ -51,16 +60,16 @@ public class TeleportHelper {
             return;
         }
         
-        delayedTeleport(player, world.getSpawnLocation(), teleportManager.getRtpRange(), true);
+        delayedTeleport(player, world.getSpawnLocation(), teleportManager.getRtpRange(), true, fromSign);
     }
 
-    public void teleportToSpawn(Player player) {
+    public void teleportToSpawn(Player player, boolean fromSign) {
         Location spawnLoc = plugin.getResourceWorldsManager().getSpawnWorld().getSpawnLocation();
-        delayedTeleport(player, spawnLoc, 0, false);
+        delayedTeleport(player, spawnLoc, 0, false, fromSign);
     }
 
-    public void delayedTeleport(Player player, Location destination, int range, boolean useCooldown) {
-        int delay = teleportManager.getTpDelay();
+    public void delayedTeleport(Player player, Location destination, int range, boolean useCooldown, boolean fromSign) {
+        int delay = teleportManager.getTpDelay(player, fromSign);
         int cooldownSeconds = useCooldown ? cooldownManager.getTpRemainingSeconds(player) : 0;
 
         if (cooldownSeconds > 0) {
@@ -78,7 +87,7 @@ public class TeleportHelper {
 
         UUID playerUUID = player.getUniqueId();
 
-        if (teleportManager.isDelayActive(playerUUID)) {
+        if (teleportManager.isDelayActive(playerUUID) || teleportManager.isSearchActive(playerUUID)) {
             return;
         }
 
@@ -147,8 +156,8 @@ public class TeleportHelper {
         int spawnX = destination.getBlockX();
         int spawnZ = destination.getBlockZ();
 
-        int randomX = LocationUtils.getRandomInt(spawnX - range, spawnX + range);
-        int randomZ = LocationUtils.getRandomInt(spawnZ - range, spawnZ + range);
+        int randomX = Utils.getRandomInt(spawnX - range, spawnX + range);
+        int randomZ = Utils.getRandomInt(spawnZ - range, spawnZ + range);
 
         BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (!teleportManager.isSearchActive(playerUUID)) {

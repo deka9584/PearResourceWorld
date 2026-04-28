@@ -5,8 +5,8 @@ import java.io.File;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
-import net.md_5.bungee.api.ChatColor;
 import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.utils.Utils;
 
 public class MessagesFileManager {
     private final PearResourceWorld plugin;
@@ -33,6 +33,6 @@ public class MessagesFileManager {
     public String getMessage(String path) {
         String msg = messagesConfig.getString(path, "")
             .replaceAll("%prefix%", messagesConfig.getString("prefix"));
-        return ChatColor.translateAlternateColorCodes('&', msg);
+        return Utils.translateColorCodes(msg);
     }
 }

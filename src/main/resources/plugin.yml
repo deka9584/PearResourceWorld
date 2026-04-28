@@ -33,10 +33,16 @@ permissions:
     default: op
   pearresourceworld.spawn:
     description: Allows resource world SPAWN subcommand
-    default: op
+    default: true
   pearresourceworld.tp.delay.bypass:
     description: Allows to bypass teleport delay
     default: op
   pearresourceworld.tp.cooldown.bypass:
     description: Allows to bypass teleport cooldown
     default: op
+  pearresourceworld.signs.create:
+    description: Allows to create resource world signs
+    default: op
+  pearresourceworld.signs.use:
+    description: Allows to use resource world signs
+    default: true

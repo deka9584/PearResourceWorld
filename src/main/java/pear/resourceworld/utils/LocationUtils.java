@@ -2,7 +2,6 @@ package pear.resourceworld.utils;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -58,9 +57,5 @@ public class LocationUtils {
         return loc1.getX() == loc2.getX()
             && loc1.getY() == loc2.getY()
             && loc1.getZ() == loc2.getZ();
-    }
-
-    public static int getRandomInt(int min, int max) {
-        return ThreadLocalRandom.current().nextInt(min, max + 1);
     }
 }

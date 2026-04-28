@@ -13,11 +13,13 @@ import pear.resourceworld.helpers.TeleportHelper;
 import pear.resourceworld.listeners.EntitySpawnListener;
 import pear.resourceworld.listeners.PlayerSpawnListener;
 import pear.resourceworld.listeners.PortalListener;
+import pear.resourceworld.listeners.SignsListener;
 import pear.resourceworld.listeners.TeleportListener;
 import pear.resourceworld.managers.CooldownManager;
 import pear.resourceworld.managers.DataFileManager;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.managers.SignsFileManager;
 import pear.resourceworld.managers.TeleportManager;
 import pear.resourceworld.runnable.ResetWorldsRunnable;
 
@@ -29,6 +31,7 @@ public class PearResourceWorld extends JavaPlugin {
     private ResourceWorldsManager resourceWorldsManager;
     private CooldownManager cooldownManager;
     private TeleportManager teleportManager;
+    private SignsFileManager signsFileManager;
     private RWPortalHelper rwPortalHelper;
     private TeleportHelper teleportHelper;
     private BukkitTask resetWorldsTask;
@@ -43,6 +46,7 @@ public class PearResourceWorld extends JavaPlugin {
         dataFileManager = new DataFileManager(this);
         messagesFileManager = new MessagesFileManager(this);
         resourceWorldsManager = new ResourceWorldsManager(this);
+        signsFileManager = new SignsFileManager(this);
         cooldownManager = new CooldownManager(this);
         teleportManager = new TeleportManager(this);
 
@@ -51,6 +55,7 @@ public class PearResourceWorld extends JavaPlugin {
 
         dataFileManager.load();
         messagesFileManager.load();
+        signsFileManager.load();
         resourceWorldsManager.loadWorlds();
         cooldownManager.load();
         teleportManager.load();
@@ -88,6 +93,10 @@ public class PearResourceWorld extends JavaPlugin {
         return messagesFileManager;
     }
 
+    public SignsFileManager getSignsFileManager() {
+        return signsFileManager;
+    }
+
     public ResourceWorldsManager getResourceWorldsManager() {
         return resourceWorldsManager;
     }
@@ -123,6 +132,7 @@ public class PearResourceWorld extends JavaPlugin {
         pm.registerEvents(new EntitySpawnListener(this), this);
         pm.registerEvents(new TeleportListener(this), this);
         pm.registerEvents(new PlayerSpawnListener(this), this);
+        pm.registerEvents(new SignsListener(this), this);
     }
 
     public void updateTaskTimer() {

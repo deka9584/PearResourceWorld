@@ -38,7 +38,7 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
             }
 
             if (args.length == 0) {
-                plugin.getTeleportHelper().teleportToRwOverworld(player);
+                plugin.getTeleportHelper().teleportToRwOverworld(player, false);
                 return true;
             }
 
@@ -54,7 +54,7 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
                         return true;
                     }
 
-                    plugin.getTeleportHelper().teleportToSpawn(player);
+                    plugin.getTeleportHelper().teleportToSpawn(player, false);
                     return true;
             
                 default:

@@ -1,0 +1,20 @@
+# If enabled you can create a sign using the format below
+#
+# TELEPORT SIGN
+# Teleport player to resource world or to the spawn world
+# if it is already in a resource world.
+#
+# Format:
+# - [ResourceWorld]
+# - tp
+#
+
+enable-signs: true
+
+# Title used to create and display signs
+# To create signs use the title without color codes
+# For example "&2[ResourceWorld]" -> "[ResourceWorld]"
+signs-title: "&2[ResourceWorld]"
+
+teleport-sign:
+  - "&aClick to teleport"

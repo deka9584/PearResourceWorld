@@ -19,6 +19,10 @@ teleport-range: 200
 # Teleport delay in seconds
 teleport-delay: 5
 
+# Teleport delay in seconds when the player clicks on a tp sign
+# instead of typing the TP command
+signs-teleport-delay: 0
+
 # Teleport to resource world cooldown in seconds
 teleport-cooldown: 60
 
