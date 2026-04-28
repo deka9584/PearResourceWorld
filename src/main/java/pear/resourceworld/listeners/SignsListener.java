@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -117,6 +118,37 @@ public class SignsListener implements Listener {
                     plugin.logWarn("Invalid sign action: " + action);
                     break;
             }
+        }
+    }
+
+    @EventHandler (ignoreCancelled = true)
+    public void onBlockBreak(BlockBreakEvent event) {
+        BlockState state = event.getBlock().getState();
+
+        if (state instanceof Sign) {
+            handleSignBreak(event, (Sign) state);
+        }
+
+        // TO DO: Get relative blocks and check if an attached block is a sign
+    }
+
+    public void handleSignBreak(BlockBreakEvent event, Sign sign) {
+        PersistentDataContainer pdc = sign.getPersistentDataContainer();
+
+        if (!pdc.has(actionKey, PersistentDataType.STRING)) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+
+        if (player == null) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!player.hasPermission("pearresourceworld.signs.break")) {
+            player.sendMessage(plugin.getMessagesFileManager().getMessage("no-permission"));
+            event.setCancelled(true);
         }
     }
 

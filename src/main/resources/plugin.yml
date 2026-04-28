@@ -46,3 +46,6 @@ permissions:
   pearresourceworld.signs.use:
     description: Allows to use resource world signs
     default: true
+  pearresourceworld.signs.break:
+    description: Allows to break resource world signs
+    default: op
