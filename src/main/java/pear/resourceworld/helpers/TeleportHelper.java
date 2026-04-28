@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.CooldownManager;
@@ -77,7 +78,7 @@ public class TeleportHelper {
 
         UUID playerUUID = player.getUniqueId();
 
-        if (!teleportManager.addActiveDelay(playerUUID)) {
+        if (teleportManager.isDelayActive(playerUUID)) {
             return;
         }
 
@@ -88,9 +89,8 @@ public class TeleportHelper {
                 .replaceAll("%seconds%", String.valueOf(delay))
         );
 
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+        BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (!teleportManager.removeActiveDelay(playerUUID)) { 
-                plugin.debugLog("Player logged out: teleport cancelled");
                 return;
             }
 
@@ -110,6 +110,8 @@ public class TeleportHelper {
 
             teleportSafely(player, destination, range, 0);
         }, 20 * delay);
+
+        teleportManager.addActiveDelay(playerUUID, task);
     }
 
     private void teleportSafely(Player player, Location destination, int range, int attempt) {
@@ -133,7 +135,7 @@ public class TeleportHelper {
         }
 
         if (attempt == 0) {
-            if (!teleportManager.addActiveSearch(playerUUID)) {
+            if (teleportManager.isSearchActive(playerUUID)) {
                 plugin.debugLog("Prevent multiple location searches on same player");
                 return;
             }
@@ -148,7 +150,7 @@ public class TeleportHelper {
         int randomX = LocationUtils.getRandomInt(spawnX - range, spawnX + range);
         int randomZ = LocationUtils.getRandomInt(spawnZ - range, spawnZ + range);
 
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
             if (!teleportManager.isSearchActive(playerUUID)) {
                 return;
             }
@@ -170,10 +172,10 @@ public class TeleportHelper {
                 return;
             }
 
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                teleportSafely(player, destination, range, attempt + 1);
-            }, 1L);
-        });
+            teleportSafely(player, destination, range, attempt + 1);
+        }, 20);
+
+        teleportManager.addActiveSearch(playerUUID, task);
     }
 
     private void teleportPlayer(Player player, Location loc) {

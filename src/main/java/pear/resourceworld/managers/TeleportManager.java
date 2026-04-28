@@ -1,18 +1,19 @@
 package pear.resourceworld.managers;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.PearResourceWorld;
 
 public class TeleportManager {
     private final PearResourceWorld plugin;
-    private final Set<UUID> activeDelays = new HashSet<>();
-    private final Set<UUID> activeSearches = new HashSet<>();
+    private final Map<UUID, BukkitTask> activeDelays = new HashMap<>();
+    private final Map<UUID, BukkitTask> activeSearches = new HashMap<>();
 
     private int rtpRange;
     private int tpDelay;
@@ -30,12 +31,12 @@ public class TeleportManager {
         bypassDelayPerm = config.getBoolean("bypass-delay-permission");
     }
 
-    public boolean addActiveDelay(UUID playerUUID) {
-        return activeDelays.add(playerUUID);
+    public BukkitTask addActiveDelay(UUID playerUUID, BukkitTask task) {
+        return activeDelays.put(playerUUID, task);
     }
 
-    public boolean addActiveSearch(UUID playerUUID) {
-        return activeSearches.add(playerUUID);
+    public BukkitTask addActiveSearch(UUID playerUUID, BukkitTask task) {
+        return activeSearches.put(playerUUID, task);
     }
 
     public boolean canBypassDelay(Player player) {
@@ -55,35 +56,34 @@ public class TeleportManager {
     }
 
     public void handlePlayerQuit(UUID playerUUID) {
-        activeDelays.remove(playerUUID);
-        activeSearches.remove(playerUUID);
+        BukkitTask delayTask = activeDelays.remove(playerUUID);
+
+        if (delayTask != null && !delayTask.isCancelled()) {
+            delayTask.cancel();
+            plugin.debugLog("Player logged out: teleport delay cancelled");
+        }
+
+        endLocationSearch(playerUUID);
     }
 
     public void endLocationSearch(UUID playerUUID) {
-        activeSearches.remove(playerUUID);
-        plugin.debugLog("End safe location search search");
+        BukkitTask task = activeSearches.remove(playerUUID);
+
+        if (task != null && !task.isCancelled()) {
+            task.cancel();
+            plugin.debugLog("End safe location search search");
+        }
     }
 
     public boolean isSearchActive(UUID playerUUID) {
-        if (!activeSearches.contains(playerUUID)) {
-            return false;
-        }
-
-        // Remove active search is player has logged out and return FALSE
-        if (plugin.getServer().getPlayer(playerUUID) == null) {
-            activeSearches.remove(playerUUID);
-            return false;
-        }
-
-        return true;
+        return activeSearches.containsKey(playerUUID);
     }
 
     public boolean isDelayActive(UUID playerUUID) {
-        return activeDelays.contains(playerUUID);
+        return activeDelays.containsKey(playerUUID);
     }
 
     public boolean removeActiveDelay(UUID playerUUID) {
-        // Returns TRUE if player had a delay active and is online
-        return activeDelays.remove(playerUUID) && plugin.getServer().getPlayer(playerUUID) != null;
+        return activeDelays.remove(playerUUID) != null;
     }
 }
