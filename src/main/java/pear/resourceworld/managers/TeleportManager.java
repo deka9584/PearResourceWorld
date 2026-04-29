@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.model.RWPermission;
 
 public class TeleportManager {
     private final PearResourceWorld plugin;
@@ -42,7 +43,7 @@ public class TeleportManager {
     }
 
     public boolean canBypassDelay(Player player) {
-        return bypassDelayPerm && player.hasPermission("pearresourceworld.tp.delay.bypass");
+        return bypassDelayPerm && player.hasPermission(RWPermission.TP_DELAY_BYPASS.get());
     }
 
     public int getRtpRange() {

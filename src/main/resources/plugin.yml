@@ -5,11 +5,11 @@ main: pear.resourceworld.PearResourceWorld
 api-version: 1.15
 commands:
   pearresourceworldadmin:
-    description: admin command
+    description: Admin command
     aliases: [resourceworldadmin]
     permission: pearresourceworld.admin
   pearresourceworld:
-    description: tp to resource world
+    description: Teleport to resource world
     aliases: [resourceworld]
     permission: pearresourceworld.tp
 permissions:
@@ -30,8 +30,8 @@ permissions:
     default: op
   pearresourceworld.tp:
     description: Allows resource world tp command
-    default: op
-  pearresourceworld.spawn:
+    default: true
+  pearresourceworld.tp.spawn:
     description: Allows resource world SPAWN subcommand
     default: true
   pearresourceworld.tp.delay.bypass:

@@ -13,6 +13,7 @@ import org.bukkit.util.StringUtil;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.MessagesFileManager;
+import pear.resourceworld.model.RWPermission;
 
 public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
     private static final String[] SUBCOMMANDS = {
@@ -32,7 +33,7 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            if (!player.hasPermission(command.getPermission())) {
+            if (!player.hasPermission(RWPermission.TP.get())) {
                 player.sendMessage(messagesFm.getMessage("no-permission"));
                 return false;
             }
@@ -44,7 +45,7 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
 
             switch (args[0]) {
                 case "spawn":
-                    if (!player.hasPermission(command.getPermission() + ".spawn")) {
+                    if (!player.hasPermission(RWPermission.TP_SPAWN.get())) {
                         player.sendMessage(messagesFm.getMessage("no-permission"));
                         return false;
                     }

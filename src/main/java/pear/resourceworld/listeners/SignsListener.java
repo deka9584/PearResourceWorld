@@ -1,8 +1,5 @@
 package pear.resourceworld.listeners;
 
-import java.util.List;
-
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -11,40 +8,34 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
 import net.md_5.bungee.api.ChatColor;
 import pear.resourceworld.PearResourceWorld;
-import pear.resourceworld.managers.SignsFileManager;
+import pear.resourceworld.helpers.SignsHelper;
+import pear.resourceworld.model.RWPermission;
 
 public class SignsListener implements Listener {
     private final PearResourceWorld plugin;
-    private final SignsFileManager signsFm;
-    private final NamespacedKey actionKey;
+    private final SignsHelper signsHelper;
 
     public SignsListener(PearResourceWorld plugin) {
         this.plugin = plugin;
-        this.signsFm = plugin.getSignsFileManager();
-        this.actionKey = new NamespacedKey(plugin, "action");
+        this.signsHelper = plugin.getSignsHelper();
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onSignChange(SignChangeEvent event) {
-        String firstLine = event.getLine(0);
-
-        if (firstLine == null) {
-            return;
-        }
-
-        firstLine = ChatColor.stripColor(firstLine);
-
-        if (firstLine.equalsIgnoreCase(ChatColor.stripColor(signsFm.getTitle()))) {
+        if (signsHelper.isResourceWorldSignTitle(event.getLine(0))) {
             Player player = event.getPlayer();
 
-            if (!player.hasPermission("pearresourceworld.signs.create")) {
+            if (!player.hasPermission(RWPermission.SIGNS_CREATE.get())) {
                 plugin.debugLog(player.getName() + " doesn't have permission to create signs");
                 return;
             }
@@ -60,7 +51,7 @@ public class SignsListener implements Listener {
 
             switch (signAction) {
                 case "tp":
-                    setSignLines(event, signsFm.getTeleportSignLines());
+                    signsHelper.setTeleportSignLines(event);
                     break;
             
                 default:
@@ -71,10 +62,7 @@ public class SignsListener implements Listener {
             BlockState state = event.getBlock().getState();
             
             if (state instanceof Sign) {
-                Sign sign = (Sign) state;
-                PersistentDataContainer pdc = sign.getPersistentDataContainer();
-                pdc.set(actionKey, PersistentDataType.STRING, signAction);
-                sign.update();
+                signsHelper.setSignAction((Sign) state, signAction);
             }
         }
     }
@@ -95,16 +83,13 @@ public class SignsListener implements Listener {
         BlockState state = block.getState();
 
         if (state instanceof Sign) {
-            Sign sign = (Sign) state;
-            PersistentDataContainer pdc = sign.getPersistentDataContainer();
+            String action = signsHelper.getSignAction((Sign) state);
 
-            if (!pdc.has(actionKey, PersistentDataType.STRING)) {
+            if (action == null) {
                 return;
             }
-            
-            String action = pdc.get(actionKey, PersistentDataType.STRING);
 
-            if (!player.hasPermission("pearresourceworld.signs.use")) {
+            if (!player.hasPermission(RWPermission.SINGS_USE.get())) {
                 player.sendMessage(plugin.getMessagesFileManager().getMessage("no-permission"));
                 return;
             }
@@ -121,42 +106,52 @@ public class SignsListener implements Listener {
         }
     }
 
-    @EventHandler (ignoreCancelled = true)
+    @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        BlockState state = event.getBlock().getState();
+        Block block = event.getBlock();
+        
+        if (signsHelper.isProtectedBlock(block)) {
+            Player player = event.getPlayer();
 
-        if (state instanceof Sign) {
-            handleSignBreak(event, (Sign) state);
-        }
+            if (player == null) {
+                event.setCancelled(true);
+            }
 
-        // TO DO: Get relative blocks and check if an attached block is a sign
-    }
-
-    public void handleSignBreak(BlockBreakEvent event, Sign sign) {
-        PersistentDataContainer pdc = sign.getPersistentDataContainer();
-
-        if (!pdc.has(actionKey, PersistentDataType.STRING)) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-
-        if (player == null) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (!player.hasPermission("pearresourceworld.signs.break")) {
-            player.sendMessage(plugin.getMessagesFileManager().getMessage("no-permission"));
-            event.setCancelled(true);
+            if (!player.hasPermission(RWPermission.SIGNS_BREAK.get())) {
+                player.sendMessage(plugin.getMessagesFileManager().getMessage("no-permission"));
+                event.setCancelled(true);
+            }
         }
     }
 
-    private void setSignLines(SignChangeEvent event, List<String> newLines) {
-        event.setLine(0, signsFm.getTitle());
+    @EventHandler
+    public void onBlockExplode(BlockExplodeEvent event) {
+        event.blockList().removeIf(block -> signsHelper.isProtectedBlock(block));
+    }
 
-        for (int i = 0; i + 1 < event.getLines().length && i < newLines.size(); i++) {
-            event.setLine(i + 1, newLines.get(i));
+    @EventHandler
+    public void onEntityExplode(EntityExplodeEvent event) {
+        event.blockList().removeIf(block -> signsHelper.isProtectedBlock(block));
+    }
+
+    @EventHandler
+    public void onBlockBurn(BlockBurnEvent event) {
+        if (signsHelper.isProtectedBlock(event.getBlock())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockPistonExtend(BlockPistonExtendEvent event) {
+        if (signsHelper.anyProtected(event.getBlocks())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockPistonRetract(BlockPistonRetractEvent event) {
+        if (event.isSticky() && signsHelper.anyProtected(event.getBlocks())) {
+            event.setCancelled(true);
         }
     }
 }

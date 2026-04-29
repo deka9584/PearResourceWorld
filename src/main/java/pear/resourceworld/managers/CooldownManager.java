@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.model.RWPermission;
 
 public class CooldownManager {
     private final PearResourceWorld plugin;
@@ -47,7 +48,7 @@ public class CooldownManager {
     }
 
     public boolean canBypassCooldown(Player player) {
-        return bypassCooldownPerm && player.hasPermission("pearresourceworld.tp.cooldown.bypass");
+        return bypassCooldownPerm && player.hasPermission(RWPermission.TP_COOLDOWN_BYPASS.get());
     }
 
     public int getTpRemainingSeconds(Player player) {

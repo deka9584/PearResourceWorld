@@ -45,4 +45,8 @@ public class SignsFileManager {
             .map(s -> Utils.translateColorCodes(s))
             .collect(Collectors.toList());
     }
+
+    public boolean isBreakPrevented() {
+        return signsConfig.getBoolean("prevent-sign-break");
+    }
 }

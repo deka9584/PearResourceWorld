@@ -9,6 +9,7 @@ import org.bukkit.scheduler.BukkitTask;
 import pear.resourceworld.commands.ResourceWorldAdminCommand;
 import pear.resourceworld.commands.ResourceWorldCommand;
 import pear.resourceworld.helpers.RWPortalHelper;
+import pear.resourceworld.helpers.SignsHelper;
 import pear.resourceworld.helpers.TeleportHelper;
 import pear.resourceworld.listeners.EntitySpawnListener;
 import pear.resourceworld.listeners.PlayerSpawnListener;
@@ -34,6 +35,7 @@ public class PearResourceWorld extends JavaPlugin {
     private SignsFileManager signsFileManager;
     private RWPortalHelper rwPortalHelper;
     private TeleportHelper teleportHelper;
+    private SignsHelper signsHelper;
     private BukkitTask resetWorldsTask;
 
     // This code is called after the server starts and after the /reload command
@@ -52,6 +54,7 @@ public class PearResourceWorld extends JavaPlugin {
 
         rwPortalHelper = new RWPortalHelper(this);
         teleportHelper = new TeleportHelper(this);
+        signsHelper = new SignsHelper(this);
 
         dataFileManager.load();
         messagesFileManager.load();
@@ -115,6 +118,10 @@ public class PearResourceWorld extends JavaPlugin {
 
     public TeleportHelper getTeleportHelper() {
         return teleportHelper;
+    }
+
+    public SignsHelper getSignsHelper() {
+        return signsHelper;
     }
 
     public void logError(String msg) {

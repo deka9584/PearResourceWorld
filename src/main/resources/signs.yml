@@ -11,6 +11,10 @@
 
 enable-signs: true
 
+# Prevent player without the permission to break the sign
+# Protect sign from burn, explosions and pistons
+prevent-sign-break: true
+
 # Title used to create and display signs
 # To create signs use the title without color codes
 # For example "&2[ResourceWorld]" -> "[ResourceWorld]"

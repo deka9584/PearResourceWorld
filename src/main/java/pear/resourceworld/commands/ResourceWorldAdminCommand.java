@@ -18,6 +18,7 @@ import net.md_5.bungee.api.ChatColor;
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.model.RWPermission;
 
 public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter {
     private static final String[] SUBCOMMANDS = {
@@ -41,7 +42,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player || sender instanceof ConsoleCommandSender) {
-            if (!sender.hasPermission(command.getPermission())) {
+            if (!sender.hasPermission(RWPermission.ADMIN.get())) {
                 sender.sendMessage(messagesFm.getMessage("no-permission"));
                 return false;
             }
@@ -53,7 +54,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
 
             switch (args[0].toLowerCase()) {
                 case "tp":
-                    if (!sender.hasPermission(command.getPermission() + ".tp")) {
+                    if (!sender.hasPermission(RWPermission.ADMIN_TP.get())) {
                         sender.sendMessage(messagesFm.getMessage("no-permission"));
                         return false;
                     }
@@ -84,7 +85,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     return false;
 
                 case "reset":
-                    if (!sender.hasPermission(command.getPermission() + ".reset")) {
+                    if (!sender.hasPermission(RWPermission.ADMIN_RESET.get())) {
                         sender.sendMessage(messagesFm.getMessage("no-permission"));
                         return false;
                     }
@@ -93,7 +94,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     return true;
 
                 case "kickall":
-                    if (!sender.hasPermission(command.getPermission() + ".kickall")) {
+                    if (!sender.hasPermission(RWPermission.ADMIN_KICKALL.get())) {
                         sender.sendMessage(messagesFm.getMessage("no-permission"));
                         return false;
                     }
@@ -103,7 +104,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     return true;
 
                 case "time":
-                    if (!sender.hasPermission(command.getPermission() + ".time")) {
+                    if (!sender.hasPermission(RWPermission.ADMIN_TIME.get())) {
                         sender.sendMessage(messagesFm.getMessage("no-permission"));
                         return false;
                     }
