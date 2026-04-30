@@ -1,7 +1,6 @@
 package pear.resourceworld.managers;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -140,12 +139,9 @@ public class ResourceWorldsManager {
 
         finalizeWorldsLoad();
 
-        if (isNewWorld && resourceWorlds.size() > 0) {
+        if (isNewWorld) {
             plugin.getLogger().info("Created new resource world");
-            updateLastResetDate();
-        } else if (plugin.getDataFileManager().getLastReset() == null) {
-            plugin.logWarn("No last reset date found: setting current date");
-            updateLastResetDate();
+            plugin.updateLastResetDate();
         }
     }
 
@@ -213,8 +209,8 @@ public class ResourceWorldsManager {
                     }
 
                     finalizeWorldsLoad();
-                    updateLastResetDate();
                     
+                    plugin.updateLastResetDate();
                     plugin.getLogger().info("Resource worlds reset completed");
 
                     plugin.getServer().broadcastMessage(
@@ -295,9 +291,5 @@ public class ResourceWorldsManager {
 
             resourceWorldReady = true;
         });
-    }
-
-    private void updateLastResetDate() {
-        plugin.getDataFileManager().setLastReset(LocalDate.now());;
     }
 }

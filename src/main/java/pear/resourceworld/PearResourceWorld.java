@@ -1,5 +1,6 @@
 package pear.resourceworld;
 
+import java.time.LocalDate;
 import java.util.logging.Level;
 
 import org.bukkit.plugin.PluginManager;
@@ -148,8 +149,17 @@ public class PearResourceWorld extends JavaPlugin {
         }
 
         if (getConfig().getBoolean("auto-reset")) {
+            if (dataFileManager.getLastReset() == null) {
+                getLogger().info("No reset date found: Setting current date");
+                updateLastResetDate();
+            }
+
             resetWorldsTask = new ResetWorldsRunnable(this).runTaskTimer(this, 0L, 20L * 60 * 60);
         }
+    }
+
+    public void updateLastResetDate() {
+        dataFileManager.setLastReset(LocalDate.now());
     }
 
     public static PearResourceWorld getInstance() {
