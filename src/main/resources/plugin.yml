@@ -19,6 +19,9 @@ permissions:
   pearresourceworld.admin.tp:
     description: Allows admin TP subcommand
     default: op
+  pearresourceworld.admin.tpspawn:
+    description: Allows admin TPSPAWN subcommand
+    default: op
   pearresourceworld.admin.reset:
     description: Allows admin RESET subcommand
     default: op

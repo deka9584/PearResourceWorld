@@ -26,6 +26,7 @@ import pear.resourceworld.model.RWPermission;
 public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter {
     private static final String[] SUBCOMMANDS = {
         "tp",
+        "tpspawn",
         "reset",
         "kickall",
         "time",
@@ -62,46 +63,15 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    Player player = null;
-                    RWDimension dim = RWDimension.OVERWORLD;
+                    return handleTpCommand(sender, args);
 
-                    if (args.length == 1) {
-                        if (!(sender instanceof Player)) {
-                            sender.sendMessage(messagesFm.getMessage("command-player-only"));
-                            return false;
-                        }
-
-                        player = (Player) sender;
-                    } else {
-                        player = plugin.getServer().getPlayer(args[1]);
-
-                        if (args.length > 2) {
-                            dim = RWDimension.getFromName(args[2]);
-                        }
-                    }
-
-                    if (player == null) {
-                        sender.sendMessage(messagesFm.getMessage("player-not-found"));
+                case "tpspawn":
+                    if (!sender.hasPermission(RWPermission.ADMIN_TPSPAWN.get())) {
+                        sender.sendMessage(messagesFm.getNoPermissionMessage());
                         return false;
                     }
 
-                    if (dim == null || !plugin.getResourceWorldsManager().getEnabledDimensions().contains(dim)) {
-                        sender.sendMessage(messagesFm.getMessage("dimension-not-found"));
-                        return false;
-                    }
-
-                    if (!rwManager.isResourceWorldReady()) {
-                        sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
-                        return false;
-                    }
-
-                    if (!rwManager.teleportPlayerToResourceWorld(player, dim)) {
-                        sender.sendMessage(messagesFm.getMessage("teleport-failed"));
-                        return false;
-                    }
-
-                    sender.sendMessage(messagesFm.getMessage("teleport-success"));
-                    return true;
+                    return handleTpSpawnCommand(sender, args);
 
                 case "reset":
                     if (!sender.hasPermission(RWPermission.ADMIN_RESET.get())) {
@@ -169,11 +139,18 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                 }
 
                 if (args.length == 3) {
-                    Set<String> dimNames = plugin.getResourceWorldsManager().getEnabledDimensions().stream()
+                    Set<String> dimNames = rwManager.getEnabledDimensions().stream()
                         .map(dim -> dim.name())
                         .collect(Collectors.toSet());
 
                     return StringUtil.copyPartialMatches(args[2], dimNames, completeSubCommand);
+                }
+
+                break;
+
+            case "tpspawn":
+                if (args.length == 2) {
+                    return null;
                 }
 
                 break;
@@ -183,6 +160,77 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         }
 
         return completeSubCommand;
+    }
+
+    private boolean handleTpCommand(CommandSender sender, String[] args) {
+        Player player;
+        RWDimension dim = RWDimension.OVERWORLD;
+
+        if (args.length == 1) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(messagesFm.getMessage("command-player-only"));
+                return false;
+            }
+
+            player = (Player) sender;
+        } else {
+            player = plugin.getServer().getPlayer(args[1]);
+
+            if (args.length > 2) {
+                dim = RWDimension.getFromName(args[2]);
+            }
+        }
+
+        if (player == null) {
+            sender.sendMessage(messagesFm.getMessage("player-not-found"));
+            return false;
+        }
+
+        if (dim == null || !rwManager.getEnabledDimensions().contains(dim)) {
+            sender.sendMessage(messagesFm.getMessage("dimension-not-found"));
+            return false;
+        }
+
+        if (!rwManager.isResourceWorldReady()) {
+            sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
+            return false;
+        }
+
+        if (!rwManager.teleportPlayerToResourceWorld(player, dim)) {
+            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
+            return false;
+        }
+
+        sender.sendMessage(messagesFm.getMessage("teleport-success"));
+        return true;
+    }
+
+    private boolean handleTpSpawnCommand(CommandSender sender, String[] args) {
+        Player player;
+
+        if (args.length == 1) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(messagesFm.getMessage("command-player-only"));
+                return false;
+            }
+
+            player = (Player) sender;
+        } else {
+            player = plugin.getServer().getPlayer(args[1]);
+        }
+
+        if (player == null) {
+            sender.sendMessage(messagesFm.getMessage("player-not-found"));
+            return false;
+        }
+
+        if (!player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
+            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
+            return false;
+        }
+
+        sender.sendMessage(messagesFm.getMessage("teleport-success"));
+        return true;
     }
 
     private void sendHelp(CommandSender sender) {
