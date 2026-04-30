@@ -24,9 +24,10 @@ public class ResourceWorldsManager {
     private final PearResourceWorld plugin;
 
     private HashMap<RWDimension, ResourceWorld> resourceWorlds = new HashMap<>();
-    private ResourceWorldSettings resourceWorldSettings;
+    private ResourceWorldSettings resourceWorldSettings = new ResourceWorldSettings();
     private World spawnWorld;
-    private boolean resourceWorldReady = false;
+    private boolean useCustomWorlds;
+    private boolean resourceWorldReady;
 
     public ResourceWorldsManager(PearResourceWorld plugin) {
         this.plugin = plugin;
@@ -69,6 +70,8 @@ public class ResourceWorldsManager {
     public void loadWorlds() {
         FileConfiguration config = plugin.getConfig();
         String spawnWorldName = config.getString("spawn-world");
+
+        useCustomWorlds = config.getBoolean("use-custom-worlds");
         resourceWorldReady = false;
 
         if (spawnWorldName == null || spawnWorldName.isEmpty()) {
@@ -83,7 +86,7 @@ public class ResourceWorldsManager {
             return;
         }
 
-        resourceWorldSettings = new ResourceWorldSettings(config.getConfigurationSection("resource-world-settings"));
+        resourceWorldSettings.update(config.getConfigurationSection("resource-world-settings"));
 
         ConfigurationSection dimensions = config.getConfigurationSection("resource-dimensions");
         String resourceOverworldName = dimensions.getString("overworld.name");
@@ -118,12 +121,19 @@ public class ResourceWorldsManager {
                 if (!FileUtils.existDirectory(plugin.getServer().getWorldContainer().getPath(), worldName)) {
                     plugin.getLogger().info("Resource world does not exists generating a new one");
                     isNewWorld = true;
+
+                    if (useCustomWorlds && existsPreloaedWorld(worldName)) {
+                        plugin.getLogger().info("Preloaded world found: " + worldName);
+
+                        if (!copyPreloadedWorld(worldName)) {
+                            plugin.logError("Unable to copy preloaded world: " + worldName);
+                            continue;
+                        }
+                    }
                 }
                 
                 plugin.getLogger().info("Loading resource world: " + worldName);
                 world = createRwWorld(resourceWorld);
-
-                plugin.getLogger().info("Loaded resource world: " + worldName);
             }
 
             resourceWorld.setWorld(world);
@@ -137,9 +147,9 @@ public class ResourceWorldsManager {
             plugin.getLogger().info("Loaded resource world: " + worldName);
         }
 
-        finalizeWorldsLoad();
+        finalizeWorldsLoad(false);
 
-        if (isNewWorld) {
+        if (isNewWorld && resourceWorlds.size() > 0) {
             plugin.getLogger().info("Created new resource world");
             plugin.updateLastResetDate();
         }
@@ -179,12 +189,23 @@ public class ResourceWorldsManager {
 
             scheduler.runTaskAsynchronously(plugin, () -> {
                 for (File folder : folderToDelete) {
+                    String name = folder.getName();
+
                     if (!FileUtils.deleteDirectory(folder)) {
-                        plugin.logError("Unable to delete world: " + folder.getName());
+                        plugin.logError("Unable to delete world: " + name);
                         continue;
                     }
                     
-                    plugin.debugLog("Deleted world: " + folder.getName());
+                    plugin.debugLog("Deleted world: " + name);
+
+                    if (useCustomWorlds && existsPreloaedWorld(name)) {
+                        if (!copyPreloadedWorld(name)) {
+                            plugin.logError("Unable to delete world: " + name);
+                            continue;
+                        }
+
+                        plugin.debugLog("Copied world: " + name);
+                    }
                 }
 
                 if (!plugin.isEnabled()) {
@@ -208,14 +229,8 @@ public class ResourceWorldsManager {
                         plugin.debugLog("Generated world: " + rw.getName());
                     }
 
-                    finalizeWorldsLoad();
-                    
+                    finalizeWorldsLoad(true);
                     plugin.updateLastResetDate();
-                    plugin.getLogger().info("Resource worlds reset completed");
-
-                    plugin.getServer().broadcastMessage(
-                        plugin.getMessagesFileManager().getMessage("reset-completed")
-                    );
                 }, 160L);
             });
 
@@ -252,6 +267,12 @@ public class ResourceWorldsManager {
         }
     }
 
+    private boolean copyPreloadedWorld(String worldName) {
+        File from = new File(plugin.getDataFolder(), worldName);
+        File to = new File(plugin.getServer().getWorldContainer(), worldName);
+        return FileUtils.copyDirectory(from.toPath(), to.toPath());
+    }
+
     private World createRwWorld(ResourceWorld rw) {
         Environment env = rw.getEnvironment();
 
@@ -266,9 +287,12 @@ public class ResourceWorldsManager {
         return world;
     }
 
-    private void finalizeWorldsLoad() {
+    private boolean existsPreloaedWorld(String worldName) {
+        return FileUtils.existDirectory(plugin.getDataFolder().getPath(), worldName);
+    }
+
+    private void finalizeWorldsLoad(boolean isReset) {
         plugin.getServer().getScheduler().runTask(plugin, () -> {
-            
             if (resourceWorldSettings.getDisableDragonBattle()) {
                 ResourceWorld rwEnd = resourceWorlds.get(RWDimension.END);
 
@@ -285,6 +309,14 @@ public class ResourceWorldsManager {
                         plugin.debugLog("End exit portal already activated");
                     }
                 }
+            }
+
+            if (isReset) {
+                plugin.getLogger().info("Resource worlds reset completed");
+
+                plugin.getServer().broadcastMessage(
+                    plugin.getMessagesFileManager().getMessage("reset-completed")
+                );
             }
 
             resourceWorldReady = true;

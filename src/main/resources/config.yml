@@ -5,6 +5,11 @@ spawn-world: "world"
 # Enable resource world autoreset
 auto-reset: true
 
+# If enabled you can use your custom worlds uploading them in the plugin
+# data folder and renaming them with the name specified in dimension config
+# For example: world_resource, world_resource_nether, world_resource_end
+use-custom-worlds: false
+
 # Reset interval in days
 reset-interval: 30
 

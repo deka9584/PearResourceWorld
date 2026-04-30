@@ -20,31 +20,31 @@ public class ResourceWorldSettings {
     private WorldType worldType;
     private boolean generateStructures;
 
-    public ResourceWorldSettings(ConfigurationSection configSect) {
-        this.teleportSpawnOnQuit = configSect.getBoolean("teleport-spawn-on-quit");
-        this.disableSetRespawn = configSect.getBoolean("disable-set-respawn");
-        this.keepInventory = configSect.getBoolean("keep-inventory");
+    public void update(ConfigurationSection configSect) {
+        teleportSpawnOnQuit = configSect.getBoolean("teleport-spawn-on-quit");
+        disableSetRespawn = configSect.getBoolean("disable-set-respawn");
+        keepInventory = configSect.getBoolean("keep-inventory");
 
-        this.difficulty = WorldUtils.getDifficultyByName(configSect.getString("difficulty"));
+        difficulty = WorldUtils.getDifficultyByName(configSect.getString("difficulty"));
 
-        if (this.difficulty == null) {
-            this.difficulty = Difficulty.EASY;
+        if (difficulty == null) {
+            difficulty = Difficulty.EASY;
         }
 
-        this.customSeed = configSect.getString("custom-seed");
-        this.pvp = configSect.getBoolean("pvp");
-        this.alwaysDay = configSect.getBoolean("always-day");
-        this.allowNetherPortals = configSect.getBoolean("allow-nether-portals"); 
-        this.allowEndPortals = configSect.getBoolean("allow-end-portals");
-        this.disableDragonBattle = configSect.getBoolean("disable-dragon-battle");
+        customSeed = configSect.getString("custom-seed");
+        pvp = configSect.getBoolean("pvp");
+        alwaysDay = configSect.getBoolean("always-day");
+        allowNetherPortals = configSect.getBoolean("allow-nether-portals"); 
+        allowEndPortals = configSect.getBoolean("allow-end-portals");
+        disableDragonBattle = configSect.getBoolean("disable-dragon-battle");
         
-        this.worldType = WorldType.getByName(configSect.getString("world-type"));
+        worldType = WorldType.getByName(configSect.getString("world-type"));
 
-        if (this.worldType == null) {
-            this.worldType = WorldType.NORMAL;
+        if (worldType == null) {
+            worldType = WorldType.NORMAL;
         }
 
-        this.generateStructures = configSect.getBoolean("generate-structures");
+        generateStructures = configSect.getBoolean("generate-structures");
     }
 
     public boolean getTeleportSpawnOnQuit() {
