@@ -239,16 +239,14 @@ public class ResourceWorldsManager {
     }
 
     public void kickAllFromResourceWorld() {
+        String message = plugin.getMessagesFileManager().getMessage("kick-from-resource-world");
+
         for (Player player : plugin.getServer().getOnlinePlayers()) {
             if (isResourceWorld(player.getWorld())) {
                 if (player.teleport(spawnWorld.getSpawnLocation())) {
-                    player.sendMessage(
-                        plugin.getMessagesFileManager().getMessage("teleport-to-spawn")
-                    );
+                    player.sendMessage(message);
                 } else {
-                    player.kickPlayer(
-                        plugin.getMessagesFileManager().getMessage("kick-from-resource-world")
-                    );
+                    player.kickPlayer(message);
                 }
             }
         }
