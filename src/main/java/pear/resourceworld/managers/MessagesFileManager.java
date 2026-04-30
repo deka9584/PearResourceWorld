@@ -35,4 +35,8 @@ public class MessagesFileManager {
             .replaceAll("%prefix%", messagesConfig.getString("prefix"));
         return Utils.translateColorCodes(msg);
     }
+
+    public String getNoPermissionMessage() {
+        return getMessage("no-permission");
+    }
 }

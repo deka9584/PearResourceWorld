@@ -11,7 +11,7 @@ public enum RWPermission {
     TP_COOLDOWN_BYPASS("pearresourceworld.tp.cooldown.bypass"),
     TP_DELAY_BYPASS("pearresourceworld.tp.delay.bypass"),
     SIGNS_CREATE("pearresourceworld.signs.create"),
-    SINGS_USE("pearresourceworld.signs.use"),
+    SIGNS_USE("pearresourceworld.signs.use"),
     SIGNS_BREAK("pearresourceworld.signs.break");
 
     private final String node;

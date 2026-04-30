@@ -1,5 +1,7 @@
 package pear.resourceworld.listeners;
 
+import java.util.List;
+
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
@@ -32,38 +34,45 @@ public class SignsListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onSignChange(SignChangeEvent event) {
-        if (signsHelper.isResourceWorldSignTitle(event.getLine(0))) {
-            Player player = event.getPlayer();
+        if (!signsHelper.isActionSignTitle(event.getLine(0))) {
+            return;
+        }
 
-            if (!player.hasPermission(RWPermission.SIGNS_CREATE.get())) {
-                plugin.debugLog(player.getName() + " doesn't have permission to create signs");
-                return;
-            }
+        Player player = event.getPlayer();
 
-            String signAction = event.getLine(1);
+        if (!player.hasPermission(RWPermission.SIGNS_CREATE.get())) {
+            event.setCancelled(true);
+            player.sendMessage(plugin.getMessagesFileManager().getNoPermissionMessage());
+            return;
+        }
 
-            if (signAction == null) {
-                plugin.debugLog("Sign action line is null");
-                return;
-            }
+        String signAction = event.getLine(1);
 
-            signAction = ChatColor.stripColor(signAction).toLowerCase();
+        if (signAction == null) {
+            return;
+        }
 
-            switch (signAction) {
-                case "tp":
-                    signsHelper.setTeleportSignLines(event);
-                    break;
+        signAction = ChatColor.stripColor(signAction).toLowerCase();
+        List<String> signLines = signsHelper.getSignLines(signAction);
+
+        if (signLines == null) {
+            event.setCancelled(true);
             
-                default:
-                    player.sendMessage(ChatColor.RED + "Inavlid action: " + signAction);
-                    return;
-            }
+            player.sendMessage(
+                plugin.getMessagesFileManager().getMessage("invalid-sign-action")
+                    .replaceAll("%action%", signAction)
+            );
+            return;
+        }
 
-            BlockState state = event.getBlock().getState();
-            
-            if (state instanceof Sign) {
-                signsHelper.setSignAction((Sign) state, signAction);
-            }
+        for (int i = 0; i < event.getLines().length && i < signLines.size(); i++) {
+            event.setLine(i, signLines.get(i));
+        }
+
+        BlockState state = event.getBlock().getState();
+        
+        if (state instanceof Sign) {
+            signsHelper.setSignAction((Sign) state, signAction);
         }
     }
 
@@ -83,26 +92,18 @@ public class SignsListener implements Listener {
         BlockState state = block.getState();
 
         if (state instanceof Sign) {
-            String action = signsHelper.getSignAction((Sign) state);
+            String signAction = signsHelper.getSignAction((Sign) state);
 
-            if (action == null) {
+            if (signAction == null) {
                 return;
             }
 
-            if (!player.hasPermission(RWPermission.SINGS_USE.get())) {
-                player.sendMessage(plugin.getMessagesFileManager().getMessage("no-permission"));
+            if (!player.hasPermission(RWPermission.SIGNS_USE.get())) {
+                player.sendMessage(plugin.getMessagesFileManager().getNoPermissionMessage());
                 return;
             }
 
-            switch (action) {
-                case "tp":
-                    plugin.getTeleportHelper().signTeleport(player);
-                    break;
-            
-                default:
-                    plugin.logWarn("Invalid sign action: " + action);
-                    break;
-            }
+            signsHelper.performAction(signAction, player);
         }
     }
 
