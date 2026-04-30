@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -34,6 +35,10 @@ public class ResourceWorldsManager {
 
     public boolean canAutoReset() {
         return plugin.getConfig().getBoolean("reset-with-players-online") || plugin.getServer().getOnlinePlayers().size() == 0;
+    }
+
+    public Set<RWDimension> getEnabledDimensions() {
+        return resourceWorlds.keySet();
     }
 
     public ResourceWorld getResourceWorld(RWDimension dimension) {
@@ -93,7 +98,7 @@ public class ResourceWorldsManager {
         resourceWorlds.clear();
 
         for (String key : dimensions.getKeys(false)) {
-            RWDimension dimension = RWDimension.getRwDimension(key);
+            RWDimension dimension = RWDimension.getFromName(key);
 
             if (dimension == null) {
                 plugin.logWarn("Invalid dimension:" + key);
@@ -221,13 +226,13 @@ public class ResourceWorldsManager {
         }, 80L);
     }
 
-    public boolean teleportPlayerToResourceWorld(Player player) {
+    public boolean teleportPlayerToResourceWorld(Player player, RWDimension dim) {
         if (!resourceWorldReady) {
             plugin.debugLog("Resource world is not ready");
             return false;
         }
 
-        ResourceWorld resourceWorld = resourceWorlds.get(RWDimension.OVERWORLD);
+        ResourceWorld resourceWorld = resourceWorlds.get(dim);
 
         if (resourceWorld == null || resourceWorld.getWorld() == null) {
             plugin.logError("Resourceworld overworld is not loaded");

@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,6 +20,7 @@ import net.md_5.bungee.api.ChatColor;
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.RWPermission;
 
 public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter {
@@ -43,7 +46,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (sender instanceof Player || sender instanceof ConsoleCommandSender) {
             if (!sender.hasPermission(RWPermission.ADMIN.get())) {
-                sender.sendMessage(messagesFm.getMessage("no-permission"));
+                sender.sendMessage(messagesFm.getNoPermissionMessage());
                 return false;
             }
 
@@ -55,38 +58,54 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             switch (args[0].toLowerCase()) {
                 case "tp":
                     if (!sender.hasPermission(RWPermission.ADMIN_TP.get())) {
-                        sender.sendMessage(messagesFm.getMessage("no-permission"));
+                        sender.sendMessage(messagesFm.getNoPermissionMessage());
                         return false;
                     }
 
-                    if (sender instanceof Player) {
-                        Player player = (Player) sender;
+                    Player player = null;
+                    RWDimension dim = RWDimension.OVERWORLD;
 
-                        if (!rwManager.isResourceWorldReady()) {
-                            sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
+                    if (args.length == 1) {
+                        if (!(sender instanceof Player)) {
+                            sender.sendMessage(messagesFm.getMessage("command-player-only"));
                             return false;
                         }
 
-                        if (rwManager.isResourceWorld(player.getWorld())) {
-                            sender.sendMessage(messagesFm.getMessage("already-resource-world-self"));
-                            return false;
-                        }
+                        player = (Player) sender;
+                    } else {
+                        player = plugin.getServer().getPlayer(args[1]);
 
-                        if (!rwManager.teleportPlayerToResourceWorld(player)) {
-                            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
-                            return false;
+                        if (args.length > 2) {
+                            dim = RWDimension.getFromName(args[2]);
                         }
-
-                        sender.sendMessage(messagesFm.getMessage("teleport-to-resource-world"));
-                        return true;
                     }
 
-                    sender.sendMessage(messagesFm.getMessage("command-player-only"));
-                    return false;
+                    if (player == null) {
+                        sender.sendMessage(messagesFm.getMessage("player-not-found"));
+                        return false;
+                    }
+
+                    if (dim == null || !plugin.getResourceWorldsManager().getEnabledDimensions().contains(dim)) {
+                        sender.sendMessage(messagesFm.getMessage("dimension-not-found"));
+                        return false;
+                    }
+
+                    if (!rwManager.isResourceWorldReady()) {
+                        sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
+                        return false;
+                    }
+
+                    if (!rwManager.teleportPlayerToResourceWorld(player, dim)) {
+                        sender.sendMessage(messagesFm.getMessage("teleport-failed"));
+                        return false;
+                    }
+
+                    sender.sendMessage(messagesFm.getMessage("teleport-success"));
+                    return true;
 
                 case "reset":
                     if (!sender.hasPermission(RWPermission.ADMIN_RESET.get())) {
-                        sender.sendMessage(messagesFm.getMessage("no-permission"));
+                        sender.sendMessage(messagesFm.getNoPermissionMessage());
                         return false;
                     }
 
@@ -95,7 +114,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
 
                 case "kickall":
                     if (!sender.hasPermission(RWPermission.ADMIN_KICKALL.get())) {
-                        sender.sendMessage(messagesFm.getMessage("no-permission"));
+                        sender.sendMessage(messagesFm.getNoPermissionMessage());
                         return false;
                     }
 
@@ -105,7 +124,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
 
                 case "time":
                     if (!sender.hasPermission(RWPermission.ADMIN_TIME.get())) {
-                        sender.sendMessage(messagesFm.getMessage("no-permission"));
+                        sender.sendMessage(messagesFm.getNoPermissionMessage());
                         return false;
                     }
 
@@ -141,6 +160,26 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
 
         if (args.length == 1) {
             return StringUtil.copyPartialMatches(args[0], Arrays.asList(SUBCOMMANDS), completeSubCommand);
+        }
+
+        switch (args[0].toLowerCase()) {
+            case "tp":
+                if (args.length == 2) {
+                    return null;
+                }
+
+                if (args.length == 3) {
+                    Set<String> dimNames = plugin.getResourceWorldsManager().getEnabledDimensions().stream()
+                        .map(dim -> dim.name())
+                        .collect(Collectors.toSet());
+
+                    return StringUtil.copyPartialMatches(args[2], dimNames, completeSubCommand);
+                }
+
+                break;
+            
+            default:
+                break;
         }
 
         return completeSubCommand;
