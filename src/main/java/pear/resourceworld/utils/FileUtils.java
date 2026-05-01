@@ -5,11 +5,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.stream.Stream;
 
 public class FileUtils {
     public static boolean copyDirectory(Path source, Path target) {
-        try {
-            Files.walk(source).forEach(path -> {
+        try (Stream<Path> stream = Files.walk(source)) {
+            stream.forEach(path -> {
                 try {
                     Path relative = source.relativize(path);
                     Path destination = target.resolve(relative);
