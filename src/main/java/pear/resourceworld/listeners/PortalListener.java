@@ -82,6 +82,7 @@ public class PortalListener implements Listener {
 
         if (portalType == PortalType.CUSTOM) {
             plugin.debugLog("Player entered in a custom portal in world: " + from.getWorld().getName());
+            return;
         }
 
         if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
@@ -94,7 +95,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType);
+        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType, event.getTo());
 
         if (dest == null) {
             plugin.debugLog("Player portal location default");
@@ -142,7 +143,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType);
+        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType, event.getTo());
 
         if (dest == null) {
             plugin.debugLog("Entity portal location default: " + event.getEntityType().name());

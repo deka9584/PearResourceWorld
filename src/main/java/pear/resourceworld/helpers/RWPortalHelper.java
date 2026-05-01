@@ -70,7 +70,7 @@ public class RWPortalHelper {
         }
     }
 
-    public Location getPortalDestination(Location from, PortalType portalType) {
+    public Location getPortalDestination(Location from, PortalType portalType, Location originalTo) {
         Environment fromEnv = from.getWorld().getEnvironment();
 
         // Overworld -> nether
@@ -81,9 +81,9 @@ public class RWPortalHelper {
                 return null;
             }
 
-            int x = (int) from.getX() / 8;
-            int z = (int) from.getZ() / 8;
-            int y = (int) Math.min(from.getY() / 2, 120);
+            int x = from.getBlockX() / 8;
+            int z = from.getBlockZ() / 8;
+            int y = Math.min(from.getBlockY() / 2, 120);
 
             return new Location(dstWorld, x, y, z);
         }
@@ -91,7 +91,10 @@ public class RWPortalHelper {
         // Overworld -> end
         if (fromEnv == Environment.NORMAL && portalType == PortalType.ENDER) {
             World dstWorld = getRwWorld(RWDimension.END);
-            return dstWorld != null ? dstWorld.getSpawnLocation() : null;
+
+            return dstWorld != null && originalTo != null
+                ? new Location(dstWorld, originalTo.getX(), originalTo.getY(), originalTo.getZ())
+                : null;
         }
 
         // Nether -> overworld
@@ -102,9 +105,9 @@ public class RWPortalHelper {
                 return null;
             }
             
-            int x = (int) from.getX() * 8;
-            int z = (int) from.getZ() * 8;
-            int y = (int) Math.min(from.getY() * 2, 240);
+            int x = from.getBlockX() * 8;
+            int z = from.getBlockZ() * 8;
+            int y = Math.min(from.getBlockY() * 2, 240);
 
             return new Location(dstWorld, x, y, z);
         }
