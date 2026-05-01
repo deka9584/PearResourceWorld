@@ -12,8 +12,8 @@ import pear.resourceworld.commands.ResourceWorldCommand;
 import pear.resourceworld.helpers.RWPortalHelper;
 import pear.resourceworld.helpers.SignsHelper;
 import pear.resourceworld.helpers.TeleportHelper;
-import pear.resourceworld.listeners.EntitySpawnListener;
-import pear.resourceworld.listeners.PlayerSpawnListener;
+import pear.resourceworld.listeners.PlayerJoinLeaveListener;
+import pear.resourceworld.listeners.PlayerRespawnListener;
 import pear.resourceworld.listeners.PortalListener;
 import pear.resourceworld.listeners.SignsListener;
 import pear.resourceworld.listeners.TeleportListener;
@@ -136,10 +136,10 @@ public class PearResourceWorld extends JavaPlugin {
     public void registerListeners() {
         PluginManager pm = getServer().getPluginManager();
 
+        pm.registerEvents(new PlayerJoinLeaveListener(this), this);
         pm.registerEvents(new PortalListener(this), this);
-        pm.registerEvents(new EntitySpawnListener(this), this);
         pm.registerEvents(new TeleportListener(this), this);
-        pm.registerEvents(new PlayerSpawnListener(this), this);
+        pm.registerEvents(new PlayerRespawnListener(this), this);
         pm.registerEvents(new SignsListener(this), this);
     }
 

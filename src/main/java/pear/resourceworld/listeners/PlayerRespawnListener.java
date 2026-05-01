@@ -5,18 +5,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.spigotmc.event.player.PlayerSpawnLocationEvent;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.ResourceWorldsManager;
 
-public class PlayerSpawnListener implements Listener {
+public class PlayerRespawnListener implements Listener {
     private final PearResourceWorld plugin;
     private final ResourceWorldsManager rwManager;
 
-    public PlayerSpawnListener(PearResourceWorld plugin) {
+    public PlayerRespawnListener(PearResourceWorld plugin) {
         this.plugin = plugin;
         this.rwManager = plugin.getResourceWorldsManager();
     }
@@ -58,39 +56,6 @@ public class PlayerSpawnListener implements Listener {
         if (!rwManager.isResourceWorldReady() || rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
             player.setBedSpawnLocation(null);
             plugin.debugLog("Removed bed spawn location in resource world for player: " + player.getName());
-        }
-    }
-
-    @EventHandler
-    public void onPlayerSpawnLocation(PlayerSpawnLocationEvent event) {
-        Location loc = event.getSpawnLocation();
-
-        if (loc == null || !rwManager.isResourceWorld(loc.getWorld())) {
-            return;
-        }
-
-        if (!rwManager.isResourceWorldReady() || rwManager.getResourceWorldSettings().getTeleportSpawnOnQuit()) {
-            event.setSpawnLocation(rwManager.getSpawnWorld().getSpawnLocation());
-        }
-    }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
-        Location loc = player.getLocation();
-
-        plugin.getTeleportManager().stopTeleportTasks(player.getUniqueId());
-
-        if (loc == null || !rwManager.isResourceWorld(loc.getWorld())) {
-            return;
-        }
-
-        if (rwManager.getResourceWorldSettings().getTeleportSpawnOnQuit()) {
-            if (player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
-                plugin.debugLog("Quit player teleported to spawn: " + player.getName());
-            } else {
-                plugin.logWarn("Unable to teleport player to spawn: " + player.getName());
-            }
         }
     }
 }
