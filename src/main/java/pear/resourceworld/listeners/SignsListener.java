@@ -85,7 +85,11 @@ public class SignsListener implements Listener {
         Block block = event.getClickedBlock();
         Player player = event.getPlayer();
 
-        if (block == null || player.isSneaking()) {
+        if (block == null) {
+            return;
+        }
+
+        if (player.isSneaking() && event.getItem() != null) {
             return;
         }
 
@@ -97,6 +101,8 @@ public class SignsListener implements Listener {
             if (signAction == null) {
                 return;
             }
+
+            event.setCancelled(true);
 
             if (!player.hasPermission(RWPermission.SIGNS_USE.get())) {
                 player.sendMessage(plugin.getMessagesFileManager().getNoPermissionMessage());
