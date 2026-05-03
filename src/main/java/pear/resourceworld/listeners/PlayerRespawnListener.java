@@ -1,7 +1,10 @@
 package pear.resourceworld.listeners;
 
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
@@ -17,7 +20,6 @@ import org.bukkit.inventory.ItemStack;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.ResourceWorldsManager;
-import pear.resourceworld.utils.WorldUtils;
 
 public class PlayerRespawnListener implements Listener {
     private final PearResourceWorld plugin;
@@ -71,12 +73,14 @@ public class PlayerRespawnListener implements Listener {
     @EventHandler
     public void onBedLeave(PlayerBedLeaveEvent event) {
         Player player = event.getPlayer();
+        World world = player.getWorld();
 
-        if (rwManager.isResourceWorld(player.getWorld()) && rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
-            event.setSpawnLocation(false);
-            player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
-            plugin.debugLog("Prevented setting new spawn location for player: " + player.getName());
+        if (!rwManager.isResourceWorld(world) || !rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
+            return;
         }
+
+        event.setSpawnLocation(false);
+        plugin.debugLog("Prevented setting new spawn location for player: " + player.getName());
     }
 
     @EventHandler
@@ -84,7 +88,7 @@ public class PlayerRespawnListener implements Listener {
         Player player = event.getPlayer();
         World world = player.getWorld();
 
-        if (!rwManager.isResourceWorld(world)) {
+        if (!rwManager.isResourceWorld(world) || !rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
             return;
         }
 
@@ -96,33 +100,36 @@ public class PlayerRespawnListener implements Listener {
                 return;
             }
 
-            if (item.getType().name().equals("RESPAWN_ANCHOR")) {
-                event.setCancelled(true);
-                plugin.debugLog("Prevented placing respawn anchor for player: " + player.getName());
-                return;
-            }
+            Environment env = world.getEnvironment();
+            Material respawnAnchor = Material.matchMaterial("RESPAWN_ANCHOR");
 
-            if (block.getType().name().equals("RESPAWN_ANCHOR")) {
-                event.setCancelled(true);
-                plugin.debugLog("Prevented interacting with respawn anchor for player: " + player.getName());
-                player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
-                return;
-            }
-
-            if (item.getType() == Material.END_CRYSTAL) {
-                boolean preventCrystalPlace = (
-                    world.getEnvironment() == Environment.THE_END &&
-                    rwManager.getResourceWorldSettings().getPreventDragonRespawn() &&
-                    block.getType() == Material.BEDROCK &&
-                    WorldUtils.hasRelativeBlockType(block, Material.BEDROCK)
-                );
-    
-                if (preventCrystalPlace) {
+            if (env == Environment.NETHER && respawnAnchor != null) {
+                if (item.getType() == respawnAnchor || block.getType() == respawnAnchor) {
                     event.setCancelled(true);
-                    player.sendMessage(plugin.getMessagesFileManager().getMessage("dragon-respawn-disabled"));
-                    plugin.debugLog("Prevented placing crystal on bedrock from player: " + player.getName());
+                    player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
+                    plugin.debugLog("Prevented placing respawn anchor for player: " + player.getName());
                 }
             }
+
+            if (env == Environment.NORMAL && Tag.BEDS.isTagged(block.getType())) {
+                restoreSpawnLocation(player.getUniqueId(), player.getBedSpawnLocation());
+            }
         }
+    }
+
+    private void restoreSpawnLocation(UUID playerUUID, Location oldSpawn) {
+        Location spawnLocation = oldSpawn != null ? oldSpawn.clone() : null;
+
+        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+            Player player = plugin.getServer().getPlayer(playerUUID);
+
+            if (player == null) {
+                return;
+            }
+
+            player.setBedSpawnLocation(spawnLocation, true);
+            player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
+            plugin.debugLog("Restored old spawn location for player: " + player.getName());
+        }, 2L);
     }
 }
