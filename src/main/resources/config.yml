@@ -70,6 +70,10 @@ resource-dimensions:
     enabled: false
     border: 2500
 
+# Block blacklisted commands in resource world
 enable-command-blacklist: true
+
+# Insert commands without '/'
+# This will block also the ':' syntax (for example '/pluginName:sethome')
 command-blacklist:
   - sethome
