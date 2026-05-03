@@ -46,7 +46,7 @@ public class DragonRespawnListener implements Listener {
 
             if (item != null && block != null && item.getType() == Material.END_CRYSTAL) {
                 boolean preventCrystalPlace = (
-                    rwManager.getResourceWorldSettings().getPreventDragonRespawn() &&
+                    rwManager.getRWSettings().getPreventDragonRespawn() &&
                     block.getType() == Material.BEDROCK &&
                     WorldUtils.hasRelativeBlockType(block, Material.BEDROCK)
                 );
@@ -72,7 +72,7 @@ public class DragonRespawnListener implements Listener {
             return;
         }
 
-        boolean preventDragonRespawn = rwManager.getResourceWorldSettings().getPreventDragonRespawn();
+        boolean preventDragonRespawn = rwManager.getRWSettings().getPreventDragonRespawn();
 
         if (preventDragonRespawn && event.getEntityType() == EntityType.ENDER_DRAGON) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {

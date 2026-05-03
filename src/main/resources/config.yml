@@ -48,7 +48,7 @@ resource-world-settings:
   custom-seed: ""
   pvp: true
   always-day: false
-  allow-nether-portals: true 
+  allow-nether-portals: true
   allow-end-portals: true
   disable-dragon-battle: true
   prevent-dragon-respawn: true

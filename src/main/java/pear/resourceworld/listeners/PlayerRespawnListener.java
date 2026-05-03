@@ -40,7 +40,7 @@ public class PlayerRespawnListener implements Listener {
 
         Player player = event.getPlayer();
 
-        if (rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
+        if (rwManager.getRWSettings().getDisableSetRespawn()) {
             event.setRespawnLocation(rwManager.getSpawnWorld().getSpawnLocation());
             plugin.debugLog("Prevented respawn in to resource world from player: " + player.getName());
             return;
@@ -64,7 +64,7 @@ public class PlayerRespawnListener implements Listener {
             return;
         }
 
-        if (!rwManager.isResourceWorldReady() || rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
+        if (!rwManager.isResourceWorldReady() || rwManager.getRWSettings().getDisableSetRespawn()) {
             player.setBedSpawnLocation(null);
             plugin.debugLog("Removed bed spawn location in resource world for player: " + player.getName());
         }
@@ -75,7 +75,7 @@ public class PlayerRespawnListener implements Listener {
         Player player = event.getPlayer();
         World world = player.getWorld();
 
-        if (!rwManager.isResourceWorld(world) || !rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
+        if (!rwManager.isResourceWorld(world) || !rwManager.getRWSettings().getDisableSetRespawn()) {
             return;
         }
 
@@ -88,7 +88,7 @@ public class PlayerRespawnListener implements Listener {
         Player player = event.getPlayer();
         World world = player.getWorld();
 
-        if (!rwManager.isResourceWorld(world) || !rwManager.getResourceWorldSettings().getDisableSetRespawn()) {
+        if (!rwManager.isResourceWorld(world) || !rwManager.getRWSettings().getDisableSetRespawn()) {
             return;
         }
 

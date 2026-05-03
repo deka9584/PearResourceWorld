@@ -24,7 +24,7 @@ public class ResourceWorldsManager {
     private final PearResourceWorld plugin;
 
     private HashMap<RWDimension, ResourceWorld> resourceWorlds = new HashMap<>();
-    private ResourceWorldSettings resourceWorldSettings = new ResourceWorldSettings();
+    private ResourceWorldSettings rwSettings = new ResourceWorldSettings();
     private World spawnWorld;
     private boolean useCustomWorlds;
     private boolean resourceWorldReady;
@@ -45,8 +45,8 @@ public class ResourceWorldsManager {
         return resourceWorlds.get(dimension);
     }
 
-    public ResourceWorldSettings getResourceWorldSettings() {
-        return resourceWorldSettings;
+    public ResourceWorldSettings getRWSettings() {
+        return rwSettings;
     }
 
     public World getSpawnWorld() {
@@ -86,7 +86,7 @@ public class ResourceWorldsManager {
             return;
         }
 
-        resourceWorldSettings.update(config.getConfigurationSection("resource-world-settings"));
+        rwSettings.update(config.getConfigurationSection("resource-world-settings"));
 
         ConfigurationSection dimensions = config.getConfigurationSection("resource-dimensions");
         String resourceOverworldName = dimensions.getString("overworld.name");
@@ -142,7 +142,7 @@ public class ResourceWorldsManager {
                 resourceWorld.setBorderSize(border);
             }
 
-            resourceWorld.updateWorldFlags(resourceWorldSettings);
+            resourceWorld.updateWorldFlags(rwSettings);
             resourceWorlds.put(dimension, resourceWorld);
             plugin.getLogger().info("Loaded resource world: " + worldName);
         }
@@ -224,7 +224,7 @@ public class ResourceWorldsManager {
     
                         rw.setWorld(w);
                         rw.updateWorldBorder();
-                        rw.updateWorldFlags(resourceWorldSettings);
+                        rw.updateWorldFlags(rwSettings);
 
                         plugin.debugLog("Generated world: " + rw.getName());
                     }
@@ -278,10 +278,10 @@ public class ResourceWorldsManager {
 
         World world = WorldUtils.generateWorld(
             rw.getName(),
-            resourceWorldSettings.getCustomSeed(),
+            rwSettings.getCustomSeed(),
             env,
-            resourceWorldSettings.getWorldType(),
-            resourceWorldSettings.getGenerateStructures()
+            rwSettings.getWorldType(),
+            rwSettings.getGenerateStructures()
         );
 
         return world;
@@ -293,7 +293,7 @@ public class ResourceWorldsManager {
 
     private void finalizeWorldsLoad(boolean isReset) {
         plugin.getServer().getScheduler().runTask(plugin, () -> {
-            if (resourceWorldSettings.getDisableDragonBattle()) {
+            if (rwSettings.getDisableDragonBattle()) {
                 ResourceWorld rwEnd = resourceWorlds.get(RWDimension.END);
 
                 if (rwEnd != null && rwEnd.getWorld() != null) {

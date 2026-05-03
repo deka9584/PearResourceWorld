@@ -44,7 +44,7 @@ public class RWPortalHelper {
     }
 
     public boolean isDragonBattleDisabled() {
-        ResourceWorldSettings rwSettings = rwManager.getResourceWorldSettings();
+        ResourceWorldSettings rwSettings = rwManager.getRWSettings();
         return rwSettings != null && rwSettings.getDisableDragonBattle();
     }
 
@@ -53,7 +53,7 @@ public class RWPortalHelper {
     }
 
     public boolean isPortalAllowed(PortalType portalType) {
-        ResourceWorldSettings rwSettings = rwManager.getResourceWorldSettings();
+        ResourceWorldSettings rwSettings = rwManager.getRWSettings();
 
         if (rwSettings == null) {
             plugin.logWarn("Resource world settings not initalized");

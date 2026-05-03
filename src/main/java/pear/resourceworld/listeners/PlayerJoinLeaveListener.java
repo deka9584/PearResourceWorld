@@ -28,7 +28,7 @@ public class PlayerJoinLeaveListener implements Listener {
             return;
         }
 
-        if (!rwManager.isResourceWorldReady() || rwManager.getResourceWorldSettings().getTeleportSpawnOnQuit()) {
+        if (!rwManager.isResourceWorldReady() || rwManager.getRWSettings().getTeleportSpawnOnQuit()) {
             player.teleport(rwManager.getSpawnWorld().getSpawnLocation());
         }
     }
@@ -44,7 +44,7 @@ public class PlayerJoinLeaveListener implements Listener {
             return;
         }
 
-        if (rwManager.getResourceWorldSettings().getTeleportSpawnOnQuit()) {
+        if (rwManager.getRWSettings().getTeleportSpawnOnQuit()) {
             if (player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
                 plugin.debugLog("Quit player teleported to spawn: " + player.getName());
             } else {
