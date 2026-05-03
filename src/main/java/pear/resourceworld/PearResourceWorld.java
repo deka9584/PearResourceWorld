@@ -13,11 +13,13 @@ import pear.resourceworld.helpers.RWPortalHelper;
 import pear.resourceworld.helpers.SignsHelper;
 import pear.resourceworld.helpers.TeleportHelper;
 import pear.resourceworld.listeners.DragonRespawnListener;
+import pear.resourceworld.listeners.PlayerCommandListener;
 import pear.resourceworld.listeners.PlayerJoinLeaveListener;
 import pear.resourceworld.listeners.PlayerRespawnListener;
 import pear.resourceworld.listeners.PortalListener;
 import pear.resourceworld.listeners.SignsListener;
 import pear.resourceworld.listeners.TeleportListener;
+import pear.resourceworld.managers.CommandBlacklistManager;
 import pear.resourceworld.managers.CooldownManager;
 import pear.resourceworld.managers.DataFileManager;
 import pear.resourceworld.managers.MessagesFileManager;
@@ -35,6 +37,7 @@ public class PearResourceWorld extends JavaPlugin {
     private CooldownManager cooldownManager;
     private TeleportManager teleportManager;
     private SignsFileManager signsFileManager;
+    private CommandBlacklistManager commandBlacklistManager;
     private RWPortalHelper rwPortalHelper;
     private TeleportHelper teleportHelper;
     private SignsHelper signsHelper;
@@ -53,6 +56,7 @@ public class PearResourceWorld extends JavaPlugin {
         signsFileManager = new SignsFileManager(this);
         cooldownManager = new CooldownManager(this);
         teleportManager = new TeleportManager(this);
+        commandBlacklistManager = new CommandBlacklistManager(this);
 
         rwPortalHelper = new RWPortalHelper(this);
         teleportHelper = new TeleportHelper(this);
@@ -64,6 +68,7 @@ public class PearResourceWorld extends JavaPlugin {
         resourceWorldsManager.loadWorlds();
         cooldownManager.load();
         teleportManager.load();
+        commandBlacklistManager.load();
 
         getCommand("pearresourceworldadmin").setExecutor(new ResourceWorldAdminCommand(this));
         getCommand("pearresourceworld").setExecutor(new ResourceWorldCommand(this));
@@ -114,6 +119,10 @@ public class PearResourceWorld extends JavaPlugin {
         return teleportManager;
     }
 
+    public CommandBlacklistManager getCommandBlacklistManager() {
+        return commandBlacklistManager;
+    }
+
     public RWPortalHelper getRwPortalHelper() {
         return rwPortalHelper;
     }
@@ -143,6 +152,7 @@ public class PearResourceWorld extends JavaPlugin {
         pm.registerEvents(new PlayerRespawnListener(this), this);
         pm.registerEvents(new DragonRespawnListener(this), this);
         pm.registerEvents(new SignsListener(this), this);
+        pm.registerEvents(new PlayerCommandListener(this), this);
     }
 
     public void updateTaskTimer() {

@@ -69,3 +69,7 @@ resource-dimensions:
     name: "world_resource_end"
     enabled: false
     border: 2500
+
+enable-command-blacklist: true
+command-blacklist:
+  - sethome
