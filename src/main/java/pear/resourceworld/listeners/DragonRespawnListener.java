@@ -68,13 +68,13 @@ public class DragonRespawnListener implements Listener {
     public void onEntitySpawn(EntitySpawnEvent event) {
         World world = event.getEntity().getWorld();
 
-        if (!rwManager.isResourceWorld(world)) {
+        if (!rwManager.isResourceWorld(world) || world.getEnvironment() != Environment.THE_END) {
             return;
         }
 
-        boolean preventDragonRespawn = rwManager.getRWSettings().getPreventDragonRespawn();
+        EntityType type = event.getEntityType();
 
-        if (preventDragonRespawn && event.getEntityType() == EntityType.ENDER_DRAGON) {
+        if (type == EntityType.ENDER_DRAGON && rwManager.getRWSettings().getPreventDragonRespawn()) {
             plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
                 ResourceWorld rwEnd = rwManager.getResourceWorld(RWDimension.END);
                 World endWorld = rwEnd != null ? rwEnd.getWorld() : null;
@@ -83,7 +83,7 @@ public class DragonRespawnListener implements Listener {
                     return;
                 }
 
-                DragonBattle battle = world.getEnderDragonBattle();
+                DragonBattle battle = endWorld.getEnderDragonBattle();
 
                 if (battle == null) {
                     return;
