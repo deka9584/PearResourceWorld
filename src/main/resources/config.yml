@@ -37,7 +37,7 @@ bypass-delay-permission: true
 # With permission pearresourceworld.tp.cooldown.bypass will bypass the cooldown
 bypass-cooldown-permission: true
 
-# Resource world settings
+# RESOURCE WORLD SETTINGS
 # Valid difficulties: PEACEFUL, EASY, NORMAL, HARD
 # Valid world types: DEFAULT, FLAT, LARGEBIOMES, AMPLIFIED, BUFFET
 resource-world-settings:
@@ -51,6 +51,7 @@ resource-world-settings:
   allow-nether-portals: true 
   allow-end-portals: true
   disable-dragon-battle: true
+  prevent-dragon-respawn: true
   world-type: DEFAULT
   generate-structures: true
 

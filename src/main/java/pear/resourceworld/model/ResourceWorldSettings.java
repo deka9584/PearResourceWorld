@@ -17,6 +17,7 @@ public class ResourceWorldSettings {
     private boolean allowNetherPortals;
     private boolean allowEndPortals;
     private boolean disableDragonBattle;
+    private boolean preventDragonRespawn;
     private WorldType worldType;
     private boolean generateStructures;
 
@@ -37,6 +38,7 @@ public class ResourceWorldSettings {
         allowNetherPortals = configSect.getBoolean("allow-nether-portals"); 
         allowEndPortals = configSect.getBoolean("allow-end-portals");
         disableDragonBattle = configSect.getBoolean("disable-dragon-battle");
+        preventDragonRespawn = configSect.getBoolean("prevent-dragon-respawn");
         
         worldType = WorldType.getByName(configSect.getString("world-type"));
 
@@ -87,11 +89,15 @@ public class ResourceWorldSettings {
         return disableSetRespawn;
     }
 
+    public boolean getGenerateStructures() {
+        return generateStructures;
+    }
+
     public WorldType getWorldType() {
         return worldType;
     }
 
-    public boolean getGenerateStructures() {
-        return generateStructures;
+    public boolean getPreventDragonRespawn() {
+        return preventDragonRespawn;
     }
 }
