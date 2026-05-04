@@ -5,11 +5,16 @@ import org.bukkit.Material;
 import org.bukkit.PortalType;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityPortalEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.world.PortalCreateEvent;
+import org.bukkit.inventory.ItemStack;
 
 import pear.resourceworld.PearResourceWorld;
 
@@ -152,5 +157,35 @@ public class PortalListener implements Listener {
 
         event.setTo(dest);
         plugin.debugLog("Entity portal location on world: " + dest.getWorld().getName());
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+
+        if (!plugin.getResourceWorldsManager().isResourceWorld(player.getWorld())) {
+            return;
+        }
+        
+        ItemStack item = event.getItem();
+        
+        if (item == null || item.getType() != Material.ENDER_EYE) {
+            return;
+        }
+
+        Block block = event.getClickedBlock();
+
+        if (block == null || block.getType() != Material.END_PORTAL_FRAME) {
+            return;
+        }
+
+        if (!plugin.getRwPortalHelper().isPortalAllowed(PortalType.ENDER)) {
+            event.setCancelled(true);
+            plugin.debugLog("Prevented placing Ender Eye on End Portal Frame");
+        }
     }
 }
