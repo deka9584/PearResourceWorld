@@ -54,6 +54,7 @@ resource-world-settings:
   prevent-dragon-respawn: true
   world-type: DEFAULT
   generate-structures: true
+  keep-spawn-in-memory: false
 
 # If resource nether/end is disabled and portals are enabled
 # they will bring to the nether/end dimension in the default world

@@ -20,6 +20,7 @@ public class ResourceWorldSettings {
     private boolean preventDragonRespawn;
     private WorldType worldType;
     private boolean generateStructures;
+    private boolean keepSpawnInMemory;
 
     public void update(ConfigurationSection configSect) {
         teleportSpawnOnQuit = configSect.getBoolean("teleport-spawn-on-quit");
@@ -47,6 +48,7 @@ public class ResourceWorldSettings {
         }
 
         generateStructures = configSect.getBoolean("generate-structures");
+        keepSpawnInMemory = configSect.getBoolean("keep-spawn-in-memory");
     }
 
     public boolean getTeleportSpawnOnQuit() {
@@ -99,5 +101,9 @@ public class ResourceWorldSettings {
 
     public boolean getPreventDragonRespawn() {
         return preventDragonRespawn;
+    }
+    
+    public boolean getKeepSpawnInMemory() {
+        return keepSpawnInMemory;
     }
 }

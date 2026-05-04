@@ -60,6 +60,7 @@ public class ResourceWorld {
 
         world.setPVP(settings.getPVP());
         world.setDifficulty(settings.getDifficulty());
+        world.setKeepSpawnInMemory(settings.getKeepSpawnInMemory());
 
         world.setGameRule(GameRule.KEEP_INVENTORY, settings.getKeepInventory());
         world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, !settings.getAlwaysDay());
