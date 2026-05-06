@@ -17,12 +17,15 @@ import org.bukkit.event.world.PortalCreateEvent;
 import org.bukkit.inventory.ItemStack;
 
 import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.helpers.RWPortalHelper;
 
 public class PortalListener implements Listener {
     private final PearResourceWorld plugin;
+    private final RWPortalHelper rwPortalHelper;
 
     public PortalListener(PearResourceWorld plugin) {
         this.plugin = plugin;
+        this.rwPortalHelper = plugin.getRwPortalHelper();
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -58,7 +61,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
+        if (!rwPortalHelper.isPortalAllowed(portalType)) {
             event.setCancelled(true);
             plugin.debugLog("Prevented portal creation on world: " + world.getName());
         }
@@ -68,7 +71,7 @@ public class PortalListener implements Listener {
     public void onPlayerPortal(PlayerPortalEvent event) {
         Location from = event.getFrom();
 
-        if (event.isCancelled() || !plugin.getRwPortalHelper().isFromResourceWorld(from)) {
+        if (event.isCancelled() || !rwPortalHelper.isFromResourceWorld(from)) {
             return;
         }
 
@@ -90,7 +93,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
+        if (!rwPortalHelper.isPortalAllowed(portalType)) {
             event.setCancelled(true);
             return;
         }
@@ -100,7 +103,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType, event.getTo());
+        Location dest = rwPortalHelper.getPortalDestination(from, portalType, event.getTo());
 
         if (dest == null) {
             plugin.debugLog("Player portal location default");
@@ -115,7 +118,7 @@ public class PortalListener implements Listener {
     public void onEntityPortal(EntityPortalEvent event) {
         Location from = event.getFrom();
 
-        if (event.isCancelled() || !plugin.getRwPortalHelper().isFromResourceWorld(from)) {
+        if (event.isCancelled() || !rwPortalHelper.isFromResourceWorld(from)) {
             return;
         }
         
@@ -143,12 +146,12 @@ public class PortalListener implements Listener {
             return;
         }
 
-        if (!plugin.getRwPortalHelper().isPortalAllowed(portalType)) {
+        if (!rwPortalHelper.isPortalAllowed(portalType)) {
             event.setCancelled(true);
             return;
         }
 
-        Location dest = plugin.getRwPortalHelper().getPortalDestination(from, portalType, event.getTo());
+        Location dest = rwPortalHelper.getPortalDestination(from, portalType, event.getTo());
 
         if (dest == null) {
             plugin.debugLog("Entity portal location default: " + event.getEntityType().name());
@@ -173,19 +176,18 @@ public class PortalListener implements Listener {
         
         ItemStack item = event.getItem();
         
-        if (item == null || item.getType() != Material.ENDER_EYE) {
-            return;
-        }
+        if (item != null && item.getType() != Material.ENDER_EYE) {
+            Block block = event.getClickedBlock();
 
-        Block block = event.getClickedBlock();
+            boolean preventEnderEye = (
+                block != null &&
+                block.getType() == Material.END_PORTAL_FRAME &&
+                !rwPortalHelper.isPortalAllowed(PortalType.ENDER)
+            );
 
-        if (block == null || block.getType() != Material.END_PORTAL_FRAME) {
-            return;
-        }
-
-        if (!plugin.getRwPortalHelper().isPortalAllowed(PortalType.ENDER)) {
-            event.setCancelled(true);
-            plugin.debugLog("Prevented placing Ender Eye on End Portal Frame");
+            if (preventEnderEye) {
+                event.setCancelled(true);
+            }
         }
     }
 }
