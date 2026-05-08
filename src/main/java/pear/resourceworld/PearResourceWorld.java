@@ -135,6 +135,15 @@ public class PearResourceWorld extends JavaPlugin {
         return signsHelper;
     }
 
+    public String getNextResetMessage() {
+        int resetInterval = plugin.getConfig().getInt("reset-interval", 0);
+        boolean isAutoReset = resetInterval > 0 && plugin.getConfig().getBoolean("auto-reset");
+
+        return messagesFileManager.getMessage("show-reset-time")
+            .replaceAll("%lastReset%", dataFileManager.getLastReset().toString())
+            .replaceAll("%nextReset%", isAutoReset ? dataFileManager.getNextReset(resetInterval).toString() : "N/A");
+    }
+
     public void logError(String msg) {
         getLogger().log(Level.SEVERE, msg);
     }

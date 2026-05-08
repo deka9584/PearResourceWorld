@@ -2,7 +2,6 @@ package pear.resourceworld.managers;
 
 import java.io.File;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -41,9 +40,11 @@ public class SignsFileManager {
     }
 
     public List<String> getTeleportSignLines() {
-        return signsConfig.getStringList("teleport-sign").stream()
-            .map(s -> Utils.translateColorCodes(s))
-            .collect(Collectors.toList());
+        return Utils.translateColorCodesList(signsConfig.getStringList("teleport-sign"));
+    }
+
+    public List<String> getResetTimeSignLines() {
+        return Utils.translateColorCodesList(signsConfig.getStringList("reset-time-sign"));
     }
 
     public boolean isBreakPrevented() {

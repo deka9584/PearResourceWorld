@@ -8,6 +8,14 @@
 # - [ResourceWorld]
 # - tp
 #
+# RESET TIME SIGN
+# Show to the player the last reset date/time
+# and the next scheduled reset
+#
+# Format:
+# - [ResourceWorld]
+# - reset-time
+#
 
 enable-signs: true
 
@@ -22,3 +30,6 @@ signs-title: "&2[ResourceWorld]"
 
 teleport-sign:
   - "&aClick to teleport"
+
+reset-time-sign:
+  - "&6Last/next reset"

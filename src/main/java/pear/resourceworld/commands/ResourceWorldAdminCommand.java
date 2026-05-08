@@ -1,6 +1,5 @@
 package pear.resourceworld.commands;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -98,15 +97,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    int resetInterval = plugin.getConfig().getInt("reset-interval", 0);
-                    boolean isAutoReset = resetInterval > 0 && plugin.getConfig().getBoolean("auto-reset");
-                    LocalDate lastReset = plugin.getDataFileManager().getLastReset();
-
-                    sender.sendMessage(messagesFm.getMessage("show-reset-time")
-                        .replaceAll("%lastReset%", lastReset.toString())
-                        .replaceAll("%nextReset%", isAutoReset ? lastReset.plusDays(resetInterval).toString() : "N/A")
-                    );
-
+                    sender.sendMessage(plugin.getNextResetMessage());
                     return true;
                 
                 case "help":
