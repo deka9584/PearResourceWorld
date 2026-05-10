@@ -12,7 +12,7 @@ public class Utils {
     }
 
     public static String translateColorCodes(String s) {
-        return ChatColor.translateAlternateColorCodes('&', s);
+        return s != null ? ChatColor.translateAlternateColorCodes('&', s) : null;
     }
 
     public static List<String> translateColorCodesList(List<String> stringList) {

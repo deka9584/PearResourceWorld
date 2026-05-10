@@ -19,6 +19,7 @@ import net.md_5.bungee.api.ChatColor;
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.model.GuiType;
 import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.RWPermission;
 
@@ -51,8 +52,12 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             }
 
             if (args.length == 0) {
-                sendHelp(sender);
-                return false;
+                if (sender instanceof Player) {
+                    plugin.getGuiManager().openGui(GuiType.ADMIN, (Player) sender);
+                } else {
+                    sendHelp(sender);
+                }
+                return true;
             }
 
             switch (args[0].toLowerCase()) {
@@ -78,7 +83,12 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    rwManager.resetWorlds();
+                    if (sender instanceof Player) {
+                        plugin.getGuiManager().openGui(GuiType.CONFIRM_RESET, (Player) sender);
+                    } else {
+                        rwManager.resetWorlds();
+                    }
+                    
                     return true;
 
                 case "kickall":

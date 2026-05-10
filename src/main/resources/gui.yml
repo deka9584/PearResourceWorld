@@ -1,0 +1,35 @@
+admin-gui:
+  name: "ResourceWorld Admin"
+  time-item: 
+    name: "&6Last/next reset"
+    lore: []
+    material: "CLOCK"
+    position: 1
+  reset-item:
+    name: "&cReset"
+    lore: []
+    material: "REDSTONE"
+    position: 3
+  tp-item:
+    name: "&aTeleport"
+    lore: []
+    material: "ENDER_PEARL"
+    position: 5
+  kick-all-item:
+    name: "&cKick all"
+    lore: []
+    material: "BARRIER"
+    position: 7
+
+confirm-reset-gui:
+  name: "Confirm Reset"
+  confirm-item:
+    name: "&aConfirm"
+    lore: []
+    material: "GREEN_WOOL"
+    position: 2
+  cancel-item:
+    name: "&cCancel"
+    lore: []
+    material: "RED_WOOL"
+    position: 6

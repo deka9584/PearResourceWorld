@@ -1,0 +1,118 @@
+package pear.resourceworld.gui;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.HumanEntity;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
+
+import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.model.GuiItem;
+import pear.resourceworld.model.GuiType;
+import pear.resourceworld.utils.Utils;
+
+public abstract class Gui implements InventoryHolder {
+    private final PearResourceWorld plugin;
+    private final GuiType type;
+    private final List<GuiItem> guiItems = new ArrayList<>();
+    
+    private Inventory inv;
+
+    public Gui(PearResourceWorld plugin, GuiType type) {
+        this.plugin = plugin;
+        this.type = type;
+    }
+
+    @Override
+    public Inventory getInventory() {
+        return inv;
+    }
+
+    public GuiItem getGuiItem(ItemStack item) {
+        if (item != null && !item.getType().isAir()) {
+            for (GuiItem guiItem : guiItems) {
+                if (guiItem.isSimilar(item)) {
+                    return guiItem;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected PearResourceWorld getPlugin() {
+        return plugin;
+    }
+
+    public GuiType getType() {
+        return type;
+    }
+
+    public abstract void onClick(InventoryClickEvent event);
+
+    public void onDrag(InventoryDragEvent event) {
+        event.setCancelled(true);
+    }
+
+    public InventoryView openInvetory(HumanEntity entity) {
+        return entity.openInventory(inv);
+    }
+
+    protected void registerGuiItems(List<GuiItem> items) {
+        guiItems.clear();
+        guiItems.addAll(items);
+    }
+
+    protected void registerGuiItems(ConfigurationSection guiConfig, String... itemIDs) {
+        guiItems.clear();
+
+        for (String itemId : itemIDs) {
+            ConfigurationSection itemSect = guiConfig.getConfigurationSection(itemId);
+
+            if (itemSect == null) {
+                plugin.logError("No config section found item: " + itemId);
+                continue;
+            }
+
+            String materialName = itemSect.getString("material", "");
+            Material material = Material.matchMaterial(materialName);
+    
+            if (material == null) {
+                plugin.logError("Invalid material: " + materialName);
+                material = Material.STONE;
+            }
+
+            String displayName = Utils.translateColorCodes(itemSect.getString("name"));
+            
+            List<String> lore = itemSect.getStringList("lore").stream()
+                .map(s -> Utils.translateColorCodes(s))
+                .collect(Collectors.toList());
+
+            int position = itemSect.getInt("position");
+    
+            guiItems.add(new GuiItem(itemId, material, displayName, lore, position));
+        }
+    }
+
+    protected void registerInventory(ConfigurationSection guiConfig, int size) {
+        registerInventory(Utils.translateColorCodes(guiConfig.getString("name", "")), size);
+    }
+
+    protected void registerInventory(String displayName, int size) {
+        inv = plugin.getServer().createInventory(this, size, displayName);
+
+        guiItems.forEach(gi -> {
+            if (gi.isEnabled()) {
+                inv.setItem(gi.getPosition(), gi.getItem());
+            }
+        });
+    }
+}
