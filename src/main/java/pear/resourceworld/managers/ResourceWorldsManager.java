@@ -100,7 +100,7 @@ public class ResourceWorldsManager {
         resourceWorlds.clear();
 
         for (String key : dimensions.getKeys(false)) {
-            RWDimension dimension = RWDimension.getFromName(key);
+            RWDimension dimension = RWDimension.getByName(key);
 
             if (dimension == null) {
                 plugin.logWarn("Invalid dimension:" + key);
@@ -246,7 +246,7 @@ public class ResourceWorldsManager {
         ResourceWorld resourceWorld = resourceWorlds.get(dim);
 
         if (resourceWorld == null || resourceWorld.getWorld() == null) {
-            plugin.logError("Resourceworld overworld is not loaded");
+            plugin.logError("Resource World dimension not loaded: " + dim.name());
             return false;
         }
 

@@ -6,18 +6,25 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import pear.resourceworld.PearResourceWorld;
+import pear.resourceworld.helpers.TeleportHelper;
 import pear.resourceworld.managers.MessagesFileManager;
+import pear.resourceworld.managers.ResourceWorldsManager;
 import pear.resourceworld.model.GuiItem;
 import pear.resourceworld.model.GuiType;
+import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.RWPermission;
 
 public class AdminGui extends Gui {
     private final MessagesFileManager messagesFm;
+    private final ResourceWorldsManager rwManager;
+    private final TeleportHelper teleportHelper;
 
     public AdminGui(PearResourceWorld plugin, ConfigurationSection guiConfig) {
         super(plugin, GuiType.ADMIN);
 
         this.messagesFm = plugin.getMessagesFileManager();
+        this.rwManager = plugin.getResourceWorldsManager();
+        this.teleportHelper = plugin.getTeleportHelper();
         
         if (guiConfig == null) {
             plugin.logError("Gui configuration not found");
@@ -67,7 +74,12 @@ public class AdminGui extends Gui {
                     return;
                 }
         
-                getPlugin().getTeleportHelper().teleportToRwOverworld((Player) entity, false);
+                if (rwManager.isResourceWorld(entity.getWorld())) {
+                    teleportHelper.adminTeleport((Player) entity, entity, null);
+                } else {
+                    teleportHelper.adminTeleport((Player) entity, entity, RWDimension.OVERWORLD);
+                }
+
                 return;
 
             case "kick-all-item":
@@ -76,7 +88,7 @@ public class AdminGui extends Gui {
                     return;
                 }
 
-                getPlugin().getResourceWorldsManager().kickAllFromResourceWorld();
+                rwManager.kickAllFromResourceWorld();
                 entity.sendMessage(messagesFm.getMessage("kicked-all-players-from-resource-world"));
                 return;
 

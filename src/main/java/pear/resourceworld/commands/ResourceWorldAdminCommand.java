@@ -178,7 +178,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             player = plugin.getServer().getPlayer(args[1]);
 
             if (args.length > 2) {
-                dim = RWDimension.getFromName(args[2]);
+                dim = RWDimension.getByName(args[2]);
             }
         }
 
@@ -192,18 +192,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             return false;
         }
 
-        if (!rwManager.isResourceWorldReady()) {
-            sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
-            return false;
-        }
-
-        if (!rwManager.teleportPlayerToResourceWorld(player, dim)) {
-            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
-            return false;
-        }
-
-        sender.sendMessage(messagesFm.getMessage("teleport-success"));
-        return true;
+        return plugin.getTeleportHelper().adminTeleport(player, sender, dim);
     }
 
     private boolean handleTpSpawnCommand(CommandSender sender, String[] args) {
@@ -225,13 +214,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             return false;
         }
 
-        if (!player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
-            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
-            return false;
-        }
-
-        sender.sendMessage(messagesFm.getMessage("teleport-success"));
-        return true;
+        return plugin.getTeleportHelper().adminTeleport(player, sender, null);
     }
 
     private void sendHelp(CommandSender sender) {
