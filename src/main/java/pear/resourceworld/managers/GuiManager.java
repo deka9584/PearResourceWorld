@@ -7,7 +7,7 @@ import java.util.Map;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryView;
 
 import pear.resourceworld.PearResourceWorld;
@@ -52,11 +52,11 @@ public class GuiManager {
         );
     }
 
-    public InventoryView openGui(GuiType type, HumanEntity entity) {
+    public InventoryView openGui(GuiType type, Player player) {
         Gui gui = guiMap.get(type);
 
         if (gui != null) {
-            return gui.openInvetory(entity);
+            return gui.openInvetory(player);
         }
 
         return null;

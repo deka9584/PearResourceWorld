@@ -1,7 +1,6 @@
 package pear.resourceworld.gui;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
@@ -45,51 +44,51 @@ public class AdminGui extends Gui {
             return;
         }
 
-        HumanEntity entity = event.getWhoClicked();
+        Player player = (Player) event.getWhoClicked();
 
-        entity.closeInventory();
+        player.closeInventory();
 
         switch (guiItem.getId()) {
             case "time-item":
-                if (!entity.hasPermission(RWPermission.ADMIN_TIME.get())) {
-                    entity.sendMessage(messagesFm.getNoPermissionMessage());
+                if (!player.hasPermission(RWPermission.ADMIN_TIME.get())) {
+                    player.sendMessage(messagesFm.getNoPermissionMessage());
                     return;
                 }
 
-                entity.sendMessage(getPlugin().getNextResetMessage());
+                player.sendMessage(getPlugin().getNextResetMessage());
                 return;
 
             case "reset-item":
-                if (!entity.hasPermission(RWPermission.ADMIN_RESET.get())) {
-                    entity.sendMessage(messagesFm.getNoPermissionMessage());
+                if (!player.hasPermission(RWPermission.ADMIN_RESET.get())) {
+                    player.sendMessage(messagesFm.getNoPermissionMessage());
                     return;
                 }
 
-                getPlugin().getGuiManager().openGui(GuiType.CONFIRM_RESET, entity);
+                getPlugin().getGuiManager().openGui(GuiType.CONFIRM_RESET, player);
                 return;
 
             case "tp-item":
-                if (!entity.hasPermission(RWPermission.ADMIN_TP.get())) {
-                    entity.sendMessage(messagesFm.getNoPermissionMessage());
+                if (!player.hasPermission(RWPermission.ADMIN_TP.get())) {
+                    player.sendMessage(messagesFm.getNoPermissionMessage());
                     return;
                 }
         
-                if (rwManager.isResourceWorld(entity.getWorld())) {
-                    teleportHelper.adminTeleport((Player) entity, entity, null);
+                if (rwManager.isResourceWorld(player.getWorld())) {
+                    teleportHelper.adminTeleport(player, player, null);
                 } else {
-                    teleportHelper.adminTeleport((Player) entity, entity, RWDimension.OVERWORLD);
+                    teleportHelper.adminTeleport(player, player, RWDimension.OVERWORLD);
                 }
 
                 return;
 
             case "kick-all-item":
-                if (!entity.hasPermission(RWPermission.ADMIN_KICKALL.get())) {
-                    entity.sendMessage(messagesFm.getNoPermissionMessage());
+                if (!player.hasPermission(RWPermission.ADMIN_KICKALL.get())) {
+                    player.sendMessage(messagesFm.getNoPermissionMessage());
                     return;
                 }
 
                 rwManager.kickAllFromResourceWorld();
-                entity.sendMessage(messagesFm.getMessage("kicked-all-players-from-resource-world"));
+                player.sendMessage(messagesFm.getMessage("kicked-all-players-from-resource-world"));
                 return;
 
             default:

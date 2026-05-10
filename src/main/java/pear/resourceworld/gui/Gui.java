@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
@@ -62,8 +62,8 @@ public abstract class Gui implements InventoryHolder {
         event.setCancelled(true);
     }
 
-    public InventoryView openInvetory(HumanEntity entity) {
-        return entity.openInventory(inv);
+    public InventoryView openInvetory(Player player) {
+        return player.openInventory(inv);
     }
 
     protected void registerGuiItems(List<GuiItem> items) {

@@ -1,7 +1,7 @@
 package pear.resourceworld.gui;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import pear.resourceworld.PearResourceWorld;
@@ -32,14 +32,14 @@ public class ConfirmResetGui extends Gui {
             return;
         }
 
-        HumanEntity entity = event.getWhoClicked();
+        Player player = (Player) event.getWhoClicked();
 
-        entity.closeInventory();
+        player.closeInventory();
 
         switch (guiItem.getId()) {
             case "confirm-item":
-                if (!entity.hasPermission(RWPermission.ADMIN_RESET.get())) {
-                    entity.sendMessage(getPlugin().getMessagesFileManager().getNoPermissionMessage());
+                if (!player.hasPermission(RWPermission.ADMIN_RESET.get())) {
+                    player.sendMessage(getPlugin().getMessagesFileManager().getNoPermissionMessage());
                     return;
                 }
 

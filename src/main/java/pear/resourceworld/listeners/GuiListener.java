@@ -1,5 +1,6 @@
 package pear.resourceworld.listeners;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -21,8 +22,12 @@ public class GuiListener implements Listener {
         Inventory inv = event.getView().getTopInventory();
 
         if (inv.getHolder() instanceof Gui) {
-            ((Gui) inv.getHolder()).onClick(event);
-            plugin.debugLog("Gui click: " + event.getView().getTitle());
+            if (event.getWhoClicked() instanceof Player) {
+                ((Gui) inv.getHolder()).onClick(event);
+            } else {
+                event.setCancelled(true);
+                plugin.logWarn("Gui clicked by a non-player entity: " +  event.getView().getTitle());
+            }
         }
     }
 
@@ -31,8 +36,12 @@ public class GuiListener implements Listener {
         Inventory inv = event.getView().getTopInventory();
 
         if (inv.getHolder() instanceof Gui) {
-            ((Gui) inv.getHolder()).onDrag(event);
-            plugin.debugLog("Gui drag: " + event.getView().getTitle());
+            if (event.getWhoClicked() instanceof Player) {
+                ((Gui) inv.getHolder()).onDrag(event);
+            } else {
+                event.setCancelled(true);
+                plugin.logWarn("Gui item dragged by a non-player entity");
+            }
         }
     }
 }
