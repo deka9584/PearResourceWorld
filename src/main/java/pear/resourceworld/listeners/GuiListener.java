@@ -24,6 +24,7 @@ public class GuiListener implements Listener {
         if (inv.getHolder() instanceof Gui) {
             if (event.getWhoClicked() instanceof Player) {
                 ((Gui) inv.getHolder()).onClick(event);
+                ((Player) event.getWhoClicked()).updateInventory();
             } else {
                 event.setCancelled(true);
                 plugin.logWarn("Gui clicked by a non-player entity: " +  event.getView().getTitle());

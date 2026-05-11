@@ -14,6 +14,7 @@ import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.gui.AdminGui;
 import pear.resourceworld.gui.ConfirmResetGui;
 import pear.resourceworld.gui.Gui;
+import pear.resourceworld.gui.AdminTeleportGui;
 import pear.resourceworld.model.GuiType;
 
 public class GuiManager {
@@ -49,6 +50,11 @@ public class GuiManager {
         guiMap.put(
             GuiType.CONFIRM_RESET,
             new ConfirmResetGui(plugin, getConfigForGui(GuiType.CONFIRM_RESET))
+        );
+
+        guiMap.put(
+            GuiType.ADMIN_TELEPORT,
+            new AdminTeleportGui(plugin, getConfigForGui(GuiType.ADMIN_TELEPORT))
         );
     }
 

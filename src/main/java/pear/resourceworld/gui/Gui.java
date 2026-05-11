@@ -24,7 +24,7 @@ public abstract class Gui implements InventoryHolder {
     private final GuiType type;
     private final List<GuiItem> guiItems = new ArrayList<>();
     
-    private Inventory inv;
+    private Inventory inventory;
 
     public Gui(PearResourceWorld plugin, GuiType type) {
         this.plugin = plugin;
@@ -33,19 +33,23 @@ public abstract class Gui implements InventoryHolder {
 
     @Override
     public Inventory getInventory() {
-        return inv;
+        return inventory;
     }
 
     public GuiItem getGuiItem(ItemStack item) {
         if (item != null && !item.getType().isAir()) {
-            for (GuiItem guiItem : guiItems) {
-                if (guiItem.isSimilar(item)) {
-                    return guiItem;
+            for (GuiItem gi : guiItems) {
+                if (gi.isSimilar(item)) {
+                    return gi;
                 }
             }
         }
 
         return null;
+    }
+
+    public List<GuiItem> getGuiItems() {
+        return guiItems;
     }
 
     protected PearResourceWorld getPlugin() {
@@ -63,7 +67,7 @@ public abstract class Gui implements InventoryHolder {
     }
 
     public InventoryView openInvetory(Player player) {
-        return player.openInventory(inv);
+        return inventory != null ? player.openInventory(inventory) : null;
     }
 
     protected void registerGuiItems(List<GuiItem> items) {
@@ -74,11 +78,11 @@ public abstract class Gui implements InventoryHolder {
     protected void registerGuiItems(ConfigurationSection guiConfig, String... itemIDs) {
         guiItems.clear();
 
-        for (String itemId : itemIDs) {
-            ConfigurationSection itemSect = guiConfig.getConfigurationSection(itemId);
+        for (String id : itemIDs) {
+            ConfigurationSection itemSect = guiConfig.getConfigurationSection(id);
 
             if (itemSect == null) {
-                plugin.logError("No config section found item: " + itemId);
+                plugin.logError("No config section found item: " + id);
                 continue;
             }
 
@@ -98,7 +102,7 @@ public abstract class Gui implements InventoryHolder {
 
             int position = itemSect.getInt("position");
     
-            guiItems.add(new GuiItem(itemId, material, displayName, lore, position));
+            guiItems.add(new GuiItem(id, material, displayName, lore, position));
         }
     }
 
@@ -107,12 +111,16 @@ public abstract class Gui implements InventoryHolder {
     }
 
     protected void registerInventory(String displayName, int size) {
-        inv = plugin.getServer().createInventory(this, size, displayName);
+        inventory = plugin.getServer().createInventory(this, size, displayName);
 
         guiItems.forEach(gi -> {
-            if (gi.isEnabled()) {
-                inv.setItem(gi.getPosition(), gi.getItem());
+            if (gi.isDisplayable()) {
+                inventory.setItem(gi.getPosition(), gi.getItem());
             }
         });
+    }
+
+    protected InventoryView switchGui(GuiType guiType, Player player) {
+        return plugin.getGuiManager().openGui(guiType, player);
     }
 }

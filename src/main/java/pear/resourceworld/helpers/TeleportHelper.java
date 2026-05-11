@@ -34,22 +34,22 @@ public class TeleportHelper {
     }
 
     public boolean adminTeleport(Player player, CommandSender sender, RWDimension dim) {
-        if (dim == null) {
-            if (!player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
-                sender.sendMessage(messagesFm.getMessage("teleport-failed"));
-                return false;
-            }
-
-            sender.sendMessage(messagesFm.getMessage("teleport-success"));
-            return true;
-        }
-
         if (!rwManager.isResourceWorldReady()) {
             sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
             return false;
         }
 
         if (!rwManager.teleportPlayerToResourceWorld(player, dim)) {
+            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
+            return false;
+        }
+
+        sender.sendMessage(messagesFm.getMessage("teleport-success"));
+        return true;
+    }
+
+    public boolean adminTeleportSpawn(Player player, CommandSender sender) {
+        if (!player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
             sender.sendMessage(messagesFm.getMessage("teleport-failed"));
             return false;
         }

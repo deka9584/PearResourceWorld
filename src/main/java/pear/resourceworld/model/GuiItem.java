@@ -10,6 +10,7 @@ public class GuiItem {
     private final String id;
     private final ItemStack item;
     private final int position;
+    private boolean disabled;
 
     public GuiItem(String id, ItemStack item, int position) {
         this.id = id;
@@ -42,12 +43,20 @@ public class GuiItem {
     public int getPosition() {
         return position;
     }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
     
-    public boolean isEnabled() {
+    public boolean isDisplayable() {
         return position >= 0;
     }
 
     public boolean isSimilar(ItemStack itemToCompare) {
         return item.isSimilar(itemToCompare);
+    }
+
+    public void setDisabled(boolean state) {
+        disabled = state;
     }
 }

@@ -5,25 +5,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 import pear.resourceworld.PearResourceWorld;
-import pear.resourceworld.helpers.TeleportHelper;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
 import pear.resourceworld.model.GuiItem;
 import pear.resourceworld.model.GuiType;
-import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.RWPermission;
 
 public class AdminGui extends Gui {
     private final MessagesFileManager messagesFm;
     private final ResourceWorldsManager rwManager;
-    private final TeleportHelper teleportHelper;
 
     public AdminGui(PearResourceWorld plugin, ConfigurationSection guiConfig) {
         super(plugin, GuiType.ADMIN);
 
         this.messagesFm = plugin.getMessagesFileManager();
         this.rwManager = plugin.getResourceWorldsManager();
-        this.teleportHelper = plugin.getTeleportHelper();
         
         if (guiConfig == null) {
             plugin.logError("Gui configuration not found");
@@ -64,7 +60,7 @@ public class AdminGui extends Gui {
                     return;
                 }
 
-                getPlugin().getGuiManager().openGui(GuiType.CONFIRM_RESET, player);
+                switchGui(GuiType.CONFIRM_RESET, player);
                 return;
 
             case "tp-item":
@@ -73,12 +69,7 @@ public class AdminGui extends Gui {
                     return;
                 }
         
-                if (rwManager.isResourceWorld(player.getWorld())) {
-                    teleportHelper.adminTeleport(player, player, null);
-                } else {
-                    teleportHelper.adminTeleport(player, player, RWDimension.OVERWORLD);
-                }
-
+                switchGui(GuiType.ADMIN_TELEPORT, player);
                 return;
 
             case "kick-all-item":
@@ -95,5 +86,4 @@ public class AdminGui extends Gui {
                 getPlugin().logWarn("No action for gui item: " + guiItem.getId());
         }
     }
-    
 }
