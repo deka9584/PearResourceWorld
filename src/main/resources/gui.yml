@@ -1,0 +1,66 @@
+admin-gui:
+  name: "ResourceWorld Admin"
+  time-item: 
+    name: "&6Last/next reset"
+    lore:
+      - "&7See last reset and next scheduled reset"
+    material: "CLOCK"
+    position: 1
+  reset-item:
+    name: "&cReset"
+    lore:
+      - "&7Reset resource world"
+    material: "RED_MUSHROOM_BLOCK"
+    position: 3
+  tp-item:
+    name: "&aTeleport"
+    lore:
+      - "&7Teleport to resource world"
+    material: "ENDER_PEARL"
+    position: 5
+  kick-all-item:
+    name: "&cKick all"
+    lore:
+      - "&7Kick all players from resource world"
+    material: "IRON_DOOR"
+    position: 7
+
+confirm-reset-gui:
+  name: "Confirm Reset"
+  confirm-item:
+    name: "&aConfirm"
+    lore: []
+    material: "GREEN_WOOL"
+    position: 2
+  cancel-item:
+    name: "&cCancel"
+    lore: []
+    material: "RED_WOOL"
+    position: 6
+
+admin-teleport-gui:
+  name: "Admin Teleport"
+  overworld-item:
+    name: "&aOverworld"
+    lore:
+      - "&6Status: %status%"
+    material: "GRASS_BLOCK"
+    position: 1
+  nether-item:
+    name: "&cNether"
+    lore:
+      - "&6Status: %status%"
+    material: "NETHERRACK"
+    position: 3
+  end-item:
+    name: "&eEnd"
+    lore:
+      - "&6Status: %status%"
+    material: "END_STONE"
+    position: 5
+  spawn-item:
+    name: "&6Spawn world"
+    lore:
+      - "&aTeleport to spawn world"
+    material: "ENDER_PEARL"
+    position: 7

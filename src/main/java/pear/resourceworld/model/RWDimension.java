@@ -17,7 +17,7 @@ public enum RWDimension {
         return environment;
     }
 
-    public static RWDimension getFromName(String name) {
+    public static RWDimension getByName(String name) {
         for (RWDimension rwd : RWDimension.values()) {
             if (rwd.name().equalsIgnoreCase(name)) {
                 return rwd;

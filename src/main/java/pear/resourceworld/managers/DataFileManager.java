@@ -33,6 +33,10 @@ public class DataFileManager {
         return null;
     }
 
+    public LocalDate getNextReset(int resetInterval) {
+        return getLastReset().plusDays(resetInterval);
+    }
+
     public void setLastReset(LocalDate date) {
         dataConfig.set("last-reset", date.toString());
         save();

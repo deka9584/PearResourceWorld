@@ -1,6 +1,5 @@
 package pear.resourceworld.commands;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +19,7 @@ import net.md_5.bungee.api.ChatColor;
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.MessagesFileManager;
 import pear.resourceworld.managers.ResourceWorldsManager;
+import pear.resourceworld.model.GuiType;
 import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.RWPermission;
 
@@ -52,8 +52,12 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             }
 
             if (args.length == 0) {
-                sendHelp(sender);
-                return false;
+                if (sender instanceof Player) {
+                    plugin.getGuiManager().openGui(GuiType.ADMIN, (Player) sender);
+                } else {
+                    sendHelp(sender);
+                }
+                return true;
             }
 
             switch (args[0].toLowerCase()) {
@@ -79,7 +83,12 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    rwManager.resetWorlds();
+                    if (sender instanceof Player) {
+                        plugin.getGuiManager().openGui(GuiType.CONFIRM_RESET, (Player) sender);
+                    } else {
+                        rwManager.resetWorlds();
+                    }
+                    
                     return true;
 
                 case "kickall":
@@ -98,15 +107,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    int resetInterval = plugin.getConfig().getInt("reset-interval", 0);
-                    boolean isAutoReset = resetInterval > 0 && plugin.getConfig().getBoolean("auto-reset");
-                    LocalDate lastReset = plugin.getDataFileManager().getLastReset();
-
-                    sender.sendMessage(messagesFm.getMessage("show-reset-time")
-                        .replaceAll("%lastReset%", lastReset.toString())
-                        .replaceAll("%nextReset%", isAutoReset ? lastReset.plusDays(resetInterval).toString() : "N/A")
-                    );
-
+                    sender.sendMessage(plugin.getNextResetMessage());
                     return true;
                 
                 case "help":
@@ -177,7 +178,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             player = plugin.getServer().getPlayer(args[1]);
 
             if (args.length > 2) {
-                dim = RWDimension.getFromName(args[2]);
+                dim = RWDimension.getByName(args[2]);
             }
         }
 
@@ -191,18 +192,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             return false;
         }
 
-        if (!rwManager.isResourceWorldReady()) {
-            sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
-            return false;
-        }
-
-        if (!rwManager.teleportPlayerToResourceWorld(player, dim)) {
-            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
-            return false;
-        }
-
-        sender.sendMessage(messagesFm.getMessage("teleport-success"));
-        return true;
+        return plugin.getTeleportHelper().adminTeleport(player, sender, dim);
     }
 
     private boolean handleTpSpawnCommand(CommandSender sender, String[] args) {
@@ -224,13 +214,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             return false;
         }
 
-        if (!player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
-            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
-            return false;
-        }
-
-        sender.sendMessage(messagesFm.getMessage("teleport-success"));
-        return true;
+        return plugin.getTeleportHelper().adminTeleport(player, sender, null);
     }
 
     private void sendHelp(CommandSender sender) {

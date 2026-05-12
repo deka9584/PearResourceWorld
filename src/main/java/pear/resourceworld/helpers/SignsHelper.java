@@ -87,6 +87,10 @@ public class SignsHelper {
             case "tp":
                 plugin.getTeleportHelper().signTeleport(player);
                 break;
+
+            case "reset-time":
+                player.sendMessage(plugin.getNextResetMessage());
+                break;
                 
             default:
                 player.sendMessage(
@@ -107,6 +111,9 @@ public class SignsHelper {
         switch (actionValue) {
             case "tp":
                 return signsFm.getTeleportSignLines();
+            
+            case "reset-time":
+                return signsFm.getResetTimeSignLines();
 
             default:
                 return null;
