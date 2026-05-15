@@ -6,6 +6,16 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 public class LocationUtils {
+    private static final String[] UNSAFE_TELEPORT_BLOCKS = {
+        "CACTUS",
+        "MAGMA_BLOCK",
+        "COBWEBS",
+        "SWEET_BERRY_BUSHES",
+        "BUBBLE_COLUMNS",
+        "POWDER_SNOW",
+        "TALL_SEAGRASS",
+        "FIRE"
+    };
 
     public static boolean isLocationSafe(Location loc) {
         World world = loc.getWorld();
@@ -21,7 +31,19 @@ public class LocationUtils {
 
         Block belowBlock = feetBlock.getRelative(BlockFace.DOWN);
 
-        return belowBlock.getType() != Material.CACTUS && !belowBlock.isLiquid();
+        return isSafeTpMaterial(belowBlock.getType()) && !belowBlock.isLiquid();
+    }
+
+    public static boolean isSafeTpMaterial(Material material) {
+        String matName = material.name();
+
+        for (int i = 0; i < UNSAFE_TELEPORT_BLOCKS.length; i++) {
+            if (UNSAFE_TELEPORT_BLOCKS[i].equals(matName)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public static boolean isSamePosition(Location loc1, Location loc2) {
