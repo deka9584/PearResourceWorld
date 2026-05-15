@@ -60,15 +60,15 @@ public class GuiManager {
 
     public InventoryView openGui(GuiType type, Player player) {
         Gui gui = guiMap.get(type);
-
-        if (gui != null) {
-            return gui.openInvetory(player);
-        }
-
-        return null;
+        return gui == null ? null : gui.openInvetory(player);
     }
 
     private ConfigurationSection getConfigForGui(GuiType type) {
+        if (guiConfig == null) {
+            plugin.logError("GUI configuration not loaded");
+            return null;
+        }
+
         return guiConfig.getConfigurationSection(type.getConfigKey());
     }
 }
