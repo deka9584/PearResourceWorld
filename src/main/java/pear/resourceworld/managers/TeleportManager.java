@@ -1,9 +1,16 @@
 package pear.resourceworld.managers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -15,11 +22,13 @@ public class TeleportManager {
     private final PearResourceWorld plugin;
     private final Map<UUID, BukkitTask> activeDelays = new HashMap<>();
     private final Map<UUID, BukkitTask> activeSearches = new HashMap<>();
+    private final List<Material> blacklistedBlockTypes = new ArrayList<>();
 
     private int rtpRange;
     private int tpDelay;
     private int signTpDelay;
     private boolean bypassDelayPerm;
+    private boolean preventTpInLiquid;
 
     public TeleportManager(PearResourceWorld plugin) {
         this.plugin = plugin;
@@ -32,6 +41,20 @@ public class TeleportManager {
         tpDelay = config.getInt("teleport-delay");
         signTpDelay = config.getInt("signs-teleport-delay");
         bypassDelayPerm = config.getBoolean("bypass-delay-permission");
+        preventTpInLiquid = config.getBoolean("safe-location-check.prevent-liquid-blocks");
+
+        blacklistedBlockTypes.clear();
+
+        config.getStringList("safe-location-check.block-blacklist").forEach(s -> {
+            Material material = Material.matchMaterial(s);
+
+            if (material == null) {
+                plugin.logWarn("Invalid material: " + s);
+            } else {
+                blacklistedBlockTypes.add(material);
+                plugin.debugLog("Added blacklisted block type: " + material.name());
+            }
+        });
     }
 
     public BukkitTask addActiveDelay(UUID playerUUID, BukkitTask task) {
@@ -91,6 +114,23 @@ public class TeleportManager {
 
     public boolean isDelayActive(UUID playerUUID) {
         return activeDelays.containsKey(playerUUID);
+    }
+
+    public boolean isLocationSafe(Location loc) {
+        World world = loc.getWorld();
+        Block feetBlock = world.getBlockAt(loc);
+
+        if (!feetBlock.isEmpty() || !feetBlock.getRelative(BlockFace.UP).isEmpty()) {
+            return false;
+        }
+
+        Block belowBlock = feetBlock.getRelative(BlockFace.DOWN);
+
+        if (preventTpInLiquid && belowBlock.isLiquid()) {
+            return false;
+        }
+
+        return !blacklistedBlockTypes.contains(belowBlock.getType());
     }
 
     public boolean removeActiveDelay(UUID playerUUID) {

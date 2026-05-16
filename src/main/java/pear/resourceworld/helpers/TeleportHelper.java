@@ -200,7 +200,7 @@ public class TeleportHelper {
             int highestY = world.getHighestBlockYAt(randomX, randomZ) + 1;
             Location randomLoc = new Location(world, randomX, highestY, randomZ);
 
-            if (LocationUtils.isLocationSafe(randomLoc)) {
+            if (teleportManager.isLocationSafe(randomLoc)) {
                 teleportManager.endLocationSearch(playerUUID);
                 teleportPlayer(player, randomLoc);
                 plugin.debugLog("Safe location found in attempt: " + attempt);

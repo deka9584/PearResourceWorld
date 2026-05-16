@@ -78,3 +78,17 @@ enable-command-blacklist: true
 # This will block also the ':' syntax (for example '/pluginName:sethome')
 command-blacklist:
   - sethome
+
+# Safe location check
+# Ignored if teleport-range is 0
+safe-location-check:
+  prevent-liquid-blocks: true
+  block-blacklist:
+    - "CACTUS"
+    - "MAGMA_BLOCK"
+    - "COBWEBS"
+    - "SWEET_BERRY_BUSHES"
+    - "BUBBLE_COLUMNS"
+    - "POWDER_SNOW"
+    - "TALL_SEAGRASS"
+    - "FIRE"
