@@ -1,8 +1,12 @@
 package pear.resourceworld;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.util.logging.Level;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -92,6 +96,34 @@ public class PearResourceWorld extends JavaPlugin {
         }
 
         getLogger().log(Level.INFO, "{0}.onDisable()", this.getClass().getName());
+    }
+
+    public boolean copyDefaultConfigOptions(FileConfiguration fc, String resName) {
+        InputStream configResource = getResource(resName);
+
+        if (configResource == null) {
+            logError("Unable load default config resource");
+            return false;
+        }
+
+        FileConfiguration configDefaults = YamlConfiguration.loadConfiguration(
+            new InputStreamReader(configResource)
+        );
+
+        boolean changed = false;
+
+        for (String key : configDefaults.getKeys(true)) {
+            if (!fc.contains(key, true)) {
+                fc.set(key, configDefaults.get(key));
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            getLogger().info("Detected changes in resource: " + resName);
+        }
+
+        return changed;
     }
 
     public void debugLog(String msg) {
