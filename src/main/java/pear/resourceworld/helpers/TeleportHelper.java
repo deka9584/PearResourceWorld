@@ -15,7 +15,6 @@ import pear.resourceworld.managers.ResourceWorldsManager;
 import pear.resourceworld.managers.TeleportManager;
 import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.ResourceWorld;
-import pear.resourceworld.utils.LocationUtils;
 import pear.resourceworld.utils.Utils;
 
 public class TeleportHelper {
@@ -134,7 +133,7 @@ public class TeleportHelper {
                 return;
             }
 
-            if (!LocationUtils.isSamePosition(playerLoc, player.getLocation())) {
+            if (!Utils.isSamePosition(playerLoc, player.getLocation())) {
                 player.sendMessage(messagesFm.getMessage("teleport-cancelled-moved"));
                 return;
             }

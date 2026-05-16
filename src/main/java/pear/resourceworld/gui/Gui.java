@@ -2,7 +2,6 @@ package pear.resourceworld.gui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -52,10 +51,6 @@ public abstract class Gui implements InventoryHolder {
         return guiItems;
     }
 
-    protected PearResourceWorld getPlugin() {
-        return plugin;
-    }
-
     public GuiType getType() {
         return type;
     }
@@ -68,6 +63,10 @@ public abstract class Gui implements InventoryHolder {
 
     public InventoryView openInvetory(Player player) {
         return inventory != null ? player.openInventory(inventory) : null;
+    }
+
+    protected PearResourceWorld getPlugin() {
+        return plugin;
     }
 
     protected void registerGuiItems(List<GuiItem> items) {
@@ -95,11 +94,7 @@ public abstract class Gui implements InventoryHolder {
             }
 
             String displayName = Utils.translateColorCodes(itemSect.getString("name"));
-            
-            List<String> lore = itemSect.getStringList("lore").stream()
-                .map(s -> Utils.translateColorCodes(s))
-                .collect(Collectors.toList());
-
+            List<String> lore = Utils.translateColorCodesList(itemSect.getStringList("lore"));
             int position = itemSect.getInt("position");
     
             guiItems.add(new GuiItem(id, material, displayName, lore, position));
