@@ -1,5 +1,6 @@
 package pear.resourceworld.gui;
 
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -15,19 +16,19 @@ public class AdminGui extends Gui {
     private final MessagesFileManager messagesFm;
     private final ResourceWorldsManager rwManager;
 
-    public AdminGui(PearResourceWorld plugin, ConfigurationSection guiConfig) {
+    public AdminGui(PearResourceWorld plugin, ConfigurationSection guiConfigSect) {
         super(plugin, GuiType.ADMIN);
 
         this.messagesFm = plugin.getMessagesFileManager();
         this.rwManager = plugin.getResourceWorldsManager();
         
-        if (guiConfig == null) {
+        if (guiConfigSect == null) {
             plugin.logError("Gui configuration not found");
             return;
         }
 
-        registerGuiItems(guiConfig, "time-item", "reset-item", "tp-item", "kick-all-item");
-        registerInventory(guiConfig, 9);
+        registerGuiItems(guiConfigSect, "time-item", "reset-item", "tp-item", "kick-all-item");
+        registerInventory(guiConfigSect, 9);
     }
 
     @Override
@@ -43,6 +44,7 @@ public class AdminGui extends Gui {
         Player player = (Player) event.getWhoClicked();
 
         player.closeInventory();
+        playSound(player, Sound.UI_BUTTON_CLICK);
 
         switch (guiItem.getId()) {
             case "time-item":

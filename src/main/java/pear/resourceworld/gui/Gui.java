@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -24,6 +25,7 @@ public abstract class Gui implements InventoryHolder {
     private final List<GuiItem> guiItems = new ArrayList<>();
     
     private Inventory inventory;
+    private boolean soundsEnabled;
 
     public Gui(PearResourceWorld plugin, GuiType type) {
         this.plugin = plugin;
@@ -51,6 +53,10 @@ public abstract class Gui implements InventoryHolder {
         return guiItems;
     }
 
+    public boolean hasSoundsEnabled() {
+        return soundsEnabled;
+    }
+
     public GuiType getType() {
         return type;
     }
@@ -65,8 +71,18 @@ public abstract class Gui implements InventoryHolder {
         return inventory != null ? player.openInventory(inventory) : null;
     }
 
+    public void setSoundsEnabled(boolean state) {
+        soundsEnabled = state;
+    }
+
     protected PearResourceWorld getPlugin() {
         return plugin;
+    }
+
+    protected void playSound(Player player, Sound sound) {
+        if (soundsEnabled) {
+            player.playSound(player.getLocation(), sound, 1, 1);
+        }
     }
 
     protected void registerGuiItems(List<GuiItem> items) {
