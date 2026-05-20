@@ -18,21 +18,24 @@ import org.bukkit.inventory.ItemStack;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.helpers.RWPortalHelper;
+import pear.resourceworld.managers.ResourceWorldsManager;
 
 public class PortalListener implements Listener {
     private final PearResourceWorld plugin;
     private final RWPortalHelper rwPortalHelper;
+    private final ResourceWorldsManager rwManager;
 
     public PortalListener(PearResourceWorld plugin) {
         this.plugin = plugin;
         this.rwPortalHelper = plugin.getRwPortalHelper();
+        this.rwManager = plugin.getResourceWorldsManager();
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPortalCreate(PortalCreateEvent event) {
         World world = event.getWorld();
 
-        if (!plugin.getResourceWorldsManager().isResourceWorld(world)) {
+        if (!rwManager.isResourceWorld(world)) {
             return;
         }
 
@@ -170,24 +173,20 @@ public class PortalListener implements Listener {
 
         Player player = event.getPlayer();
 
-        if (!plugin.getResourceWorldsManager().isResourceWorld(player.getWorld())) {
+        if (!rwManager.isResourceWorld(player.getWorld()) || rwPortalHelper.isPortalAllowed(PortalType.ENDER)) {
             return;
         }
         
         ItemStack item = event.getItem();
-        
-        if (item != null && item.getType() != Material.ENDER_EYE) {
-            Block block = event.getClickedBlock();
+        Block block = event.getClickedBlock();
 
-            boolean preventEnderEye = (
-                block != null &&
-                block.getType() == Material.END_PORTAL_FRAME &&
-                !rwPortalHelper.isPortalAllowed(PortalType.ENDER)
-            );
+        if (item == null || block == null) {
+            return;
+        }
 
-            if (preventEnderEye) {
-                event.setCancelled(true);
-            }
+        if (item.getType() == Material.ENDER_EYE && block.getType() == Material.END_PORTAL_FRAME) {
+            event.setCancelled(true);
+            plugin.debugLog("Prevented placing eye on end portal frame from player: " + player.getName());
         }
     }
 }

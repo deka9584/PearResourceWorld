@@ -6,7 +6,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
-import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -85,6 +84,10 @@ public class PlayerRespawnListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
         Player player = event.getPlayer();
         World world = player.getWorld();
 
@@ -92,28 +95,31 @@ public class PlayerRespawnListener implements Listener {
             return;
         }
 
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            ItemStack item = event.getItem();
-            Block block = event.getClickedBlock();
+        ItemStack item = event.getItem();
+        Block block = event.getClickedBlock();
 
-            if (item == null || block == null) {
-                return;
-            }
+        if (item == null || block == null) {
+            return;
+        }
 
-            Environment env = world.getEnvironment();
-            Material respawnAnchor = Material.matchMaterial("RESPAWN_ANCHOR");
+        switch (world.getEnvironment()) {
+            case NORMAL:
+                if (Tag.BEDS.isTagged(block.getType())) {
+                    restoreSpawnLocation(player.getUniqueId(), player.getBedSpawnLocation());
+                }
+                break;
 
-            if (env == Environment.NETHER && respawnAnchor != null) {
-                if (item.getType() == respawnAnchor || block.getType() == respawnAnchor) {
+            case NETHER:
+                Material respawnAnchor = Material.matchMaterial("RESPAWN_ANCHOR");
+                if (respawnAnchor != null && block.getType() == respawnAnchor) {
                     event.setCancelled(true);
                     player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
                     plugin.debugLog("Prevented placing respawn anchor for player: " + player.getName());
                 }
-            }
-
-            if (env == Environment.NORMAL && Tag.BEDS.isTagged(block.getType())) {
-                restoreSpawnLocation(player.getUniqueId(), player.getBedSpawnLocation());
-            }
+                break;
+        
+            default:
+                break;
         }
     }
 

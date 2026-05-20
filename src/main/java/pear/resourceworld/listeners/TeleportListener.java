@@ -1,5 +1,6 @@
 package pear.resourceworld.listeners;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,7 +20,9 @@ public class TeleportListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
-        if (!rwManager.isResourceWorldReady() && rwManager.isResourceWorld(event.getTo().getWorld())) {
+        Location to = event.getTo();
+
+        if (to != null && !rwManager.isResourceWorldReady() && rwManager.isResourceWorld(to.getWorld())) {
             Player player = event.getPlayer();
 
             event.setCancelled(true);

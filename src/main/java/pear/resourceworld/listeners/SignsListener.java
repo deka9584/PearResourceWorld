@@ -122,6 +122,7 @@ public class SignsListener implements Listener {
 
             if (player == null) {
                 event.setCancelled(true);
+                return;
             }
 
             if (!player.hasPermission(RWPermission.SIGNS_BREAK.get())) {
