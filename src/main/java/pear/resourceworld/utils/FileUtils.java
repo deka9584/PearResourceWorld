@@ -33,11 +33,6 @@ public class FileUtils {
         return false;
     }
 
-    public static boolean existDirectory(String parentPath, String dirName) {
-        File file = new File(parentPath, dirName);
-        return file.exists() && file.isDirectory();
-    }
-
     public static boolean deleteDirectory(File directory) {
         if (directory.exists() && directory.isDirectory()) {
             File[] files = directory.listFiles();
@@ -56,5 +51,10 @@ public class FileUtils {
         }
 
         return false;
+    }
+
+    public static boolean existDirectory(String parentPath, String dirName) {
+        File file = new File(parentPath, dirName);
+        return file.exists() && file.isDirectory();
     }
 }

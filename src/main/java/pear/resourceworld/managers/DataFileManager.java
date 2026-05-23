@@ -39,7 +39,10 @@ public class DataFileManager {
 
     public void setLastReset(LocalDate date) {
         dataConfig.set("last-reset", date.toString());
-        save();
+        
+        if (save()) {
+            plugin.debugLog("Last reset saved");
+        }
     }
 
     public void load() {
@@ -57,19 +60,12 @@ public class DataFileManager {
         }
 
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-        dataConfig.options().copyDefaults();
         plugin.debugLog("Loaded data file");
     }
 
     public boolean save() {
-        if (dataFile != null && dataConfig != null) {
-            try {
-                dataConfig.save(dataFile);
-                return true;
-            } catch (IOException ex) {
-                plugin.logError("Unable to save data.yml file");
-                plugin.logError(ex.getMessage());
-            }
+        if (dataConfig != null && dataFile != null) {
+            return plugin.saveFileConfiguration(dataConfig, dataFile);
         }
 
         return false;
