@@ -51,15 +51,16 @@ public class DragonRespawnListener implements Listener {
             return;
         }
 
-        if (item.getType() == Material.END_CRYSTAL
-            && block.getType() == Material.BEDROCK
-            && WorldUtils.hasRelativeBlockType(block, Material.BEDROCK)
-        ) {
-            event.setCancelled(true);
+        if (item.getType() == Material.END_CRYSTAL) {
+            Material blockType = block.getType();
 
-            player.sendMessage(
-                plugin.getMessagesFileManager().getMessage("dragon-respawn-disabled")
-            );
+            if (blockType == Material.BEDROCK && WorldUtils.hasRelativeBlock(block, blockType)) {
+                event.setCancelled(true);
+    
+                player.sendMessage(
+                    plugin.getMessagesFileManager().getMessage("dragon-respawn-disabled")
+                );
+            }
         }
     }
 

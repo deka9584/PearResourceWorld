@@ -110,8 +110,7 @@ public class PlayerRespawnListener implements Listener {
                 break;
 
             case NETHER:
-                Material respawnAnchor = Material.matchMaterial("RESPAWN_ANCHOR");
-                if (respawnAnchor != null && block.getType() == respawnAnchor) {
+                if (block.getType() == Material.matchMaterial("RESPAWN_ANCHOR")) {
                     event.setCancelled(true);
                     player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
                     plugin.debugLog("Prevented placing respawn anchor for player: " + player.getName());
