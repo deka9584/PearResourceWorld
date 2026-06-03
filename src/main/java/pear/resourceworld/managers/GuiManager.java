@@ -40,6 +40,11 @@ public class GuiManager {
 
         guiConfig = YamlConfiguration.loadConfiguration(guiFile);
 
+        if (guiConfig == null) {
+            plugin.logError("GUI configuration not loaded");
+            return;
+        }
+
         guiMap.clear();
 
         guiMap.put(
@@ -56,6 +61,10 @@ public class GuiManager {
             GuiType.ADMIN_TELEPORT,
             new AdminTeleportGui(plugin, getConfigForGui(GuiType.ADMIN_TELEPORT))
         );
+
+        guiMap.values().forEach(gui -> {
+            gui.setSoundsEnabled(guiConfig.getBoolean("enable-gui-sounds"));
+        });
     }
 
     public InventoryView openGui(GuiType type, Player player) {
@@ -64,11 +73,6 @@ public class GuiManager {
     }
 
     private ConfigurationSection getConfigForGui(GuiType type) {
-        if (guiConfig == null) {
-            plugin.logError("GUI configuration not loaded");
-            return null;
-        }
-
         return guiConfig.getConfigurationSection(type.getConfigKey());
     }
 }

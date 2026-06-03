@@ -69,10 +69,8 @@ public class SignsListener implements Listener {
             event.setLine(i, signLines.get(i));
         }
 
-        BlockState state = event.getBlock().getState();
-        
-        if (state instanceof Sign) {
-            signsHelper.setSignAction((Sign) state, signAction);
+        if (!signsHelper.setSignAction(event.getBlock().getState(), signAction)) {
+            plugin.logError("Unable to save sign action: " + signAction);
         }
     }
 
@@ -122,6 +120,7 @@ public class SignsListener implements Listener {
 
             if (player == null) {
                 event.setCancelled(true);
+                return;
             }
 
             if (!player.hasPermission(RWPermission.SIGNS_BREAK.get())) {

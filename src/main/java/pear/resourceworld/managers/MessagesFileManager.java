@@ -28,6 +28,10 @@ public class MessagesFileManager {
         }
 
         messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
+
+        if (plugin.copyDefaultConfigOptions(messagesConfig, "messages.yml")) {
+            plugin.saveFileConfiguration(messagesConfig, messagesFile);
+        }
     }
 
     public String getMessage(String path) {

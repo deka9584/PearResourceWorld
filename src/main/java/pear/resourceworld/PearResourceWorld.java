@@ -1,5 +1,7 @@
 package pear.resourceworld;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.LocalDate;
@@ -204,6 +206,17 @@ public class PearResourceWorld extends JavaPlugin {
         pm.registerEvents(new SignsListener(this), this);
         pm.registerEvents(new PlayerCommandListener(this), this);
         pm.registerEvents(new GuiListener(this), this);
+    }
+
+    public boolean saveFileConfiguration(FileConfiguration fc, File dest) {
+        try {
+            fc.save(dest);
+            return true;
+        } catch (IOException ex) {
+            getLogger().log(Level.SEVERE, "Unable to save file configuration: " + dest.getName(), ex);
+        }
+
+        return false;
     }
 
     public void updateTaskTimer() {

@@ -3,6 +3,7 @@ package pear.resourceworld.gui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -24,25 +25,25 @@ public class AdminTeleportGui extends Gui {
     private final ResourceWorldsManager rwManager;
     private final TeleportHelper teleportHelper;
 
-    public AdminTeleportGui(PearResourceWorld plugin, ConfigurationSection guiConfig) {
+    public AdminTeleportGui(PearResourceWorld plugin, ConfigurationSection guiConfigSect) {
         super(plugin, GuiType.ADMIN_TELEPORT);
 
         this.messagesFm = plugin.getMessagesFileManager();
         this.rwManager = plugin.getResourceWorldsManager();
         this.teleportHelper = plugin.getTeleportHelper();
         
-        if (guiConfig == null) {
+        if (guiConfigSect == null) {
             plugin.logError("Gui configuration not found");
             return;
         }
 
-        registerGuiItems(guiConfig, "overworld-item", "nether-item", "end-item", "spawn-item");
+        registerGuiItems(guiConfigSect, "overworld-item", "nether-item", "end-item", "spawn-item");
 
         getGuiItems().forEach(gi -> {
             updateItem(gi);
         });
 
-        registerInventory(guiConfig, 9);
+        registerInventory(guiConfigSect, 9);
     }
 
     @Override
@@ -51,13 +52,19 @@ public class AdminTeleportGui extends Gui {
 
         event.setCancelled(true);
 
-        if (guiItem == null || guiItem.isDisabled()) {
+        if (guiItem == null) {
             return;
         }
-
+        
         Player player = (Player) event.getWhoClicked();
 
+        if (guiItem.isDisabled()) {
+            playSound(player, Sound.BLOCK_ANVIL_HIT);
+            return;
+        }
+        
         player.closeInventory();
+        playSound(player, Sound.UI_BUTTON_CLICK);
 
         if (!player.hasPermission(RWPermission.ADMIN_TP.get())) {
             player.sendMessage(messagesFm.getNoPermissionMessage());

@@ -33,33 +33,33 @@ public class DragonRespawnListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        World world = player.getWorld();
-
-        if (!rwManager.isResourceWorld(world) || world.getEnvironment() != Environment.THE_END) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            ItemStack item = event.getItem();
-            Block block = event.getClickedBlock();
+        Player player = event.getPlayer();
+        World world = player.getWorld();
 
-            if (item != null && block != null && item.getType() == Material.END_CRYSTAL) {
-                boolean preventCrystalPlace = (
-                    rwManager.getRWSettings().getPreventDragonRespawn() &&
-                    block.getType() == Material.BEDROCK &&
-                    WorldUtils.hasRelativeBlockType(block, Material.BEDROCK)
-                );
+        if (world.getEnvironment() != Environment.THE_END || !rwManager.isResourceWorld(world)) {
+            return;
+        }
+
+        ItemStack item = event.getItem();
+        Block block = event.getClickedBlock();
+
+        if (item == null || block == null || !rwManager.getRWSettings().getPreventDragonRespawn()) {
+            return;
+        }
+
+        if (item.getType() == Material.END_CRYSTAL) {
+            Material blockType = block.getType();
+
+            if (blockType == Material.BEDROCK && WorldUtils.hasRelativeBlock(block, blockType)) {
+                event.setCancelled(true);
     
-                if (preventCrystalPlace) {
-                    event.setCancelled(true);
-
-                    player.sendMessage(
-                        plugin.getMessagesFileManager().getMessage("dragon-respawn-disabled")
-                    );
-
-                    plugin.debugLog("Prevented placing crystal on bedrock from player: " + player.getName());
-                }
+                player.sendMessage(
+                    plugin.getMessagesFileManager().getMessage("dragon-respawn-disabled")
+                );
             }
         }
     }
@@ -68,7 +68,7 @@ public class DragonRespawnListener implements Listener {
     public void onEntitySpawn(EntitySpawnEvent event) {
         World world = event.getEntity().getWorld();
 
-        if (!rwManager.isResourceWorld(world) || world.getEnvironment() != Environment.THE_END) {
+        if (world.getEnvironment() != Environment.THE_END || !rwManager.isResourceWorld(world)) {
             return;
         }
 
@@ -85,7 +85,7 @@ public class DragonRespawnListener implements Listener {
 
                 DragonBattle battle = endWorld.getEnderDragonBattle();
 
-                if (battle == null) {
+                if (battle == null || !battle.hasBeenPreviouslyKilled()) {
                     return;
                 }
 

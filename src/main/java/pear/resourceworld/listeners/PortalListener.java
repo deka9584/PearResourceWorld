@@ -6,6 +6,7 @@ import org.bukkit.PortalType;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,21 +19,24 @@ import org.bukkit.inventory.ItemStack;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.helpers.RWPortalHelper;
+import pear.resourceworld.managers.ResourceWorldsManager;
 
 public class PortalListener implements Listener {
     private final PearResourceWorld plugin;
     private final RWPortalHelper rwPortalHelper;
+    private final ResourceWorldsManager rwManager;
 
     public PortalListener(PearResourceWorld plugin) {
         this.plugin = plugin;
         this.rwPortalHelper = plugin.getRwPortalHelper();
+        this.rwManager = plugin.getResourceWorldsManager();
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPortalCreate(PortalCreateEvent event) {
         World world = event.getWorld();
 
-        if (!plugin.getResourceWorldsManager().isResourceWorld(world)) {
+        if (!rwManager.isResourceWorld(world)) {
             return;
         }
 
@@ -63,6 +67,13 @@ public class PortalListener implements Listener {
 
         if (!rwPortalHelper.isPortalAllowed(portalType)) {
             event.setCancelled(true);
+            
+            Entity entity = event.getEntity();
+
+            if (entity instanceof Player) {
+                entity.sendMessage(plugin.getMessagesFileManager().getMessage("portal-disabled"));
+            }
+
             plugin.debugLog("Prevented portal creation on world: " + world.getName());
         }
     }
@@ -98,12 +109,14 @@ public class PortalListener implements Listener {
             return;
         }
 
-        if (event.getTo() == null) {
+        Location to = event.getTo();
+
+        if (to == null) {
             plugin.getLogger().info("getTo() returned null");
             return;
         }
 
-        Location dest = rwPortalHelper.getPortalDestination(from, portalType, event.getTo());
+        Location dest = rwPortalHelper.getPortalDestination(from, portalType, to);
 
         if (dest == null) {
             plugin.debugLog("Player portal location default");
@@ -121,14 +134,16 @@ public class PortalListener implements Listener {
         if (event.isCancelled() || !rwPortalHelper.isFromResourceWorld(from)) {
             return;
         }
+
+        Location to = event.getTo();
         
-        if (event.getTo() == null) {
+        if (to == null) {
             plugin.getLogger().info("getTo() returned null");
             return;
         }
 
         World fromWorld = from.getWorld();
-        World toWorld = event.getTo().getWorld();
+        World toWorld = to.getWorld();
         PortalType portalType;
 
         if ((fromWorld.getEnvironment() == Environment.NETHER && toWorld.getEnvironment() == Environment.NORMAL) ||
@@ -170,24 +185,21 @@ public class PortalListener implements Listener {
 
         Player player = event.getPlayer();
 
-        if (!plugin.getResourceWorldsManager().isResourceWorld(player.getWorld())) {
+        if (!rwManager.isResourceWorld(player.getWorld()) || rwPortalHelper.isPortalAllowed(PortalType.ENDER)) {
             return;
         }
         
         ItemStack item = event.getItem();
-        
-        if (item != null && item.getType() != Material.ENDER_EYE) {
-            Block block = event.getClickedBlock();
+        Block block = event.getClickedBlock();
 
-            boolean preventEnderEye = (
-                block != null &&
-                block.getType() == Material.END_PORTAL_FRAME &&
-                !rwPortalHelper.isPortalAllowed(PortalType.ENDER)
-            );
+        if (item == null || block == null) {
+            return;
+        }
 
-            if (preventEnderEye) {
-                event.setCancelled(true);
-            }
+        if (item.getType() == Material.ENDER_EYE && block.getType() == Material.END_PORTAL_FRAME) {
+            event.setCancelled(true);
+            player.sendMessage(plugin.getMessagesFileManager().getMessage("portal-disabled"));
+            plugin.debugLog("Prevented placing eye on end portal frame from player: " + player.getName());
         }
     }
 }

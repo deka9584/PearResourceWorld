@@ -29,6 +29,10 @@ public class SignsFileManager {
         }
 
         signsConfig = YamlConfiguration.loadConfiguration(signsFile);
+
+        if (plugin.copyDefaultConfigOptions(signsConfig, "signs.yml")) {
+            plugin.saveFileConfiguration(signsConfig, signsFile);
+        }
     }
 
     public String getColoredString(String path) {

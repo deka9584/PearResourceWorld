@@ -41,10 +41,19 @@ public class SignsHelper {
     }
 
     public List<String> getSignLines(String actionValue) {
-        List<String> lines = getActionSignLines(actionValue);
+        List<String> lines;
 
-        if (lines == null) {
-            return null;
+        switch (actionValue) {
+            case "tp":
+                lines = signsFm.getTeleportSignLines();
+                break;
+            
+            case "reset-time":
+                lines = signsFm.getResetTimeSignLines();
+                break;
+
+            default:
+                return null;
         }
 
         lines.add(0, signsFm.getTitle());
@@ -101,22 +110,14 @@ public class SignsHelper {
         }
     }
 
-    public void setSignAction(Sign sign, String actionValue) {
-        PersistentDataContainer pdc = sign.getPersistentDataContainer();
-        pdc.set(actionKey, PersistentDataType.STRING, actionValue);
-        sign.update();
-    }
-
-    private List<String> getActionSignLines(String actionValue) {
-        switch (actionValue) {
-            case "tp":
-                return signsFm.getTeleportSignLines();
-            
-            case "reset-time":
-                return signsFm.getResetTimeSignLines();
-
-            default:
-                return null;
+    public boolean setSignAction(BlockState state, String actionValue) {
+        if (state instanceof Sign) {
+            Sign sign = (Sign) state;
+            PersistentDataContainer pdc = sign.getPersistentDataContainer();
+            pdc.set(actionKey, PersistentDataType.STRING, actionValue);
+            return sign.update();
         }
+
+        return false;
     }
 }

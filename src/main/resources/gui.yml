@@ -1,3 +1,5 @@
+enable-gui-sounds: true
+
 admin-gui:
   name: "ResourceWorld Admin"
   time-item: 

@@ -149,7 +149,7 @@ public class WorldUtils {
         return signs;
     }
 
-    public static boolean hasRelativeBlockType(Block block, Material relativeType) {
+    public static boolean hasRelativeBlock(Block block, Material relativeType) {
         for (BlockFace face : BlockFace.values()) {
             if (face != BlockFace.SELF && block.getRelative(face).getType() == relativeType) {
                 return true;
