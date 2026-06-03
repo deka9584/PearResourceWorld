@@ -15,7 +15,6 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.inventory.ItemStack;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.ResourceWorldsManager;
@@ -95,10 +94,9 @@ public class PlayerRespawnListener implements Listener {
             return;
         }
 
-        ItemStack item = event.getItem();
         Block block = event.getClickedBlock();
 
-        if (item == null || block == null) {
+        if (block == null) {
             return;
         }
 
