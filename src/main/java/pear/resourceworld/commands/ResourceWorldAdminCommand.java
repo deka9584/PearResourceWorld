@@ -67,7 +67,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    return handleTpCommand(sender, args);
+                    return handleTpCommand(sender, args, false);
 
                 case "tpspawn":
                     if (!sender.hasPermission(RWPermission.ADMIN_TPSPAWN.get())) {
@@ -75,11 +75,16 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    return handleTpSpawnCommand(sender, args);
+                    return handleTpCommand(sender, args, true);
 
                 case "reset":
                     if (!sender.hasPermission(RWPermission.ADMIN_RESET.get())) {
                         sender.sendMessage(messagesFm.getNoPermissionMessage());
+                        return false;
+                    }
+
+                    if (!rwManager.isResourceWorldReady()) {
+                        sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
                         return false;
                     }
 
@@ -163,9 +168,8 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         return completeSubCommand;
     }
 
-    private boolean handleTpCommand(CommandSender sender, String[] args) {
+    private boolean handleTpCommand(CommandSender sender, String[] args, boolean toSpawn) {
         Player player;
-        RWDimension dim = RWDimension.OVERWORLD;
 
         if (args.length == 1) {
             if (!(sender instanceof Player)) {
@@ -176,16 +180,18 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             player = (Player) sender;
         } else {
             player = plugin.getServer().getPlayer(args[1]);
-
-            if (args.length > 2) {
-                dim = RWDimension.getByName(args[2]);
-            }
         }
 
         if (player == null) {
             sender.sendMessage(messagesFm.getMessage("player-not-found"));
             return false;
         }
+
+        if (toSpawn) {
+            return plugin.getTeleportHelper().adminTeleportSpawn(player, sender);
+        }
+
+        RWDimension dim = args.length > 2 ? RWDimension.getByName(args[2]) : RWDimension.OVERWORLD;
 
         if (dim == null || !rwManager.getEnabledDimensions().contains(dim)) {
             sender.sendMessage(messagesFm.getMessage("dimension-not-found"));
@@ -193,28 +199,6 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         }
 
         return plugin.getTeleportHelper().adminTeleportResource(player, sender, dim);
-    }
-
-    private boolean handleTpSpawnCommand(CommandSender sender, String[] args) {
-        Player player;
-
-        if (args.length == 1) {
-            if (!(sender instanceof Player)) {
-                sender.sendMessage(messagesFm.getMessage("command-player-only"));
-                return false;
-            }
-
-            player = (Player) sender;
-        } else {
-            player = plugin.getServer().getPlayer(args[1]);
-        }
-
-        if (player == null) {
-            sender.sendMessage(messagesFm.getMessage("player-not-found"));
-            return false;
-        }
-
-        return plugin.getTeleportHelper().adminTeleportSpawn(player, sender);
     }
 
     private void sendHelp(CommandSender sender) {

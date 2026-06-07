@@ -62,6 +62,11 @@ public class AdminGui extends Gui {
                     return;
                 }
 
+                if (!rwManager.isResourceWorldReady()) {
+                    player.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
+                    return;
+                }
+
                 switchGui(GuiType.CONFIRM_RESET, player);
                 return;
 
