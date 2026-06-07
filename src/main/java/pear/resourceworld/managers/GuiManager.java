@@ -24,6 +24,7 @@ public class GuiManager {
 
     private File guiFile;
     private FileConfiguration guiConfig;
+    private boolean enableSounds;
 
     public GuiManager(PearResourceWorld plugin) {
         this.plugin = plugin;
@@ -40,6 +41,7 @@ public class GuiManager {
         }
 
         guiConfig = YamlConfiguration.loadConfiguration(guiFile);
+        enableSounds = guiConfig.getBoolean("enable-gui-sounds");
 
         if (plugin.copyDefaultConfigOptions(guiConfig, "gui.yml")) {
             plugin.saveFileConfiguration(guiConfig, guiFile);
@@ -47,29 +49,16 @@ public class GuiManager {
 
         guiMap.clear();
 
-        guiMap.put(
-            GuiType.ADMIN,
-            new AdminGui(plugin, getConfigForGui(GuiType.ADMIN))
-        );
+        registerGui(createGui(GuiType.ADMIN));
+        registerGui(createGui(GuiType.CONFIRM_RESET));
+        registerGui(createGui(GuiType.ADMIN_TELEPORT));
+        registerGui(createGui(GuiType.PLAYER_TELEPORT));
+    }
 
-        guiMap.put(
-            GuiType.CONFIRM_RESET,
-            new ConfirmResetGui(plugin, getConfigForGui(GuiType.CONFIRM_RESET))
-        );
-
-        guiMap.put(
-            GuiType.ADMIN_TELEPORT,
-            new AdminTeleportGui(plugin, getConfigForGui(GuiType.ADMIN_TELEPORT))
-        );
-
-        guiMap.put(
-            GuiType.PLAYER_TELEPORT,
-            new PlayerTeleportGui(plugin, getConfigForGui(GuiType.PLAYER_TELEPORT))
-        );
-
-        guiMap.values().forEach(gui -> {
-            gui.setSoundsEnabled(guiConfig.getBoolean("enable-gui-sounds"));
-        });
+    public Gui createGui(GuiType type) {
+        Gui gui = initGui(type);
+        gui.setSoundsEnabled(enableSounds);
+        return gui;
     }
 
     public InventoryView openGui(GuiType type, Player player) {
@@ -77,7 +66,29 @@ public class GuiManager {
         return gui == null ? null : gui.openInvetory(player);
     }
 
-    private ConfigurationSection getConfigForGui(GuiType type) {
-        return guiConfig.getConfigurationSection(type.getConfigKey());
+    private Gui initGui(GuiType type) {
+        ConfigurationSection configSect = guiConfig.getConfigurationSection(type.getConfigKey());
+
+        switch (type) {
+            case ADMIN:
+                return new AdminGui(plugin, configSect);
+
+            case CONFIRM_RESET:
+                return new ConfirmResetGui(plugin, configSect);
+
+            case ADMIN_TELEPORT:
+                return new AdminTeleportGui(plugin, configSect);
+
+            case PLAYER_TELEPORT:
+                return new PlayerTeleportGui(plugin, configSect);
+        
+            default:
+                plugin.logWarn("Invalid GUI type:" + type.name());
+                return null;
+        }
+    }
+
+    private void registerGui(Gui gui) {
+        guiMap.put(gui.getType(), gui);
     }
 }
