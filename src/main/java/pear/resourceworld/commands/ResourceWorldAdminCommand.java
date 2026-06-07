@@ -192,7 +192,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             return false;
         }
 
-        return plugin.getTeleportHelper().adminTeleport(player, sender, dim);
+        return plugin.getTeleportHelper().adminTeleportResource(player, sender, dim);
     }
 
     private boolean handleTpSpawnCommand(CommandSender sender, String[] args) {
@@ -214,7 +214,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             return false;
         }
 
-        return plugin.getTeleportHelper().adminTeleport(player, sender, null);
+        return plugin.getTeleportHelper().adminTeleportSpawn(player, sender);
     }
 
     private void sendHelp(CommandSender sender) {

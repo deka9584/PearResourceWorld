@@ -73,15 +73,15 @@ public class AdminTeleportGui extends Gui {
 
         switch (guiItem.getId()) {
             case "overworld-item":
-                teleportHelper.adminTeleport(player, player, RWDimension.OVERWORLD);
+                teleportHelper.adminTeleportResource(player, player, RWDimension.OVERWORLD);
                 return;
 
             case "nether-item":
-                teleportHelper.adminTeleport(player, player, RWDimension.NETHER);
+                teleportHelper.adminTeleportResource(player, player, RWDimension.NETHER);
                 return;
             
             case "end-item":
-                teleportHelper.adminTeleport(player, player, RWDimension.END);
+                teleportHelper.adminTeleportResource(player, player, RWDimension.END);
                 return;
 
             case "spawn-item":

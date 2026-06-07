@@ -13,6 +13,7 @@ import org.bukkit.util.StringUtil;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.MessagesFileManager;
+import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.RWPermission;
 
 public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
@@ -39,7 +40,7 @@ public class ResourceWorldCommand implements CommandExecutor, TabCompleter {
             }
 
             if (args.length == 0) {
-                plugin.getTeleportHelper().teleportToRwOverworld(player, false);
+                plugin.getTeleportHelper().teleportToResourceWorld(player, false, RWDimension.OVERWORLD);
                 return true;
             }
 

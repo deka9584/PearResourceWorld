@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 import pear.resourceworld.PearResourceWorld;
@@ -29,5 +30,10 @@ public class TeleportListener implements Listener {
             player.sendMessage(plugin.getMessagesFileManager().getMessage("reset-still-in-progress"));
             plugin.debugLog("Prevented teleport in to world under reset from player: " + player.getName());
         }
+    }
+
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        plugin.getTeleportManager().stopTeleportTasks(event.getPlayer().getUniqueId());
     }
 }

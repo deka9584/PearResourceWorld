@@ -126,6 +126,10 @@ public class TeleportManager {
 
         Block belowBlock = feetBlock.getRelative(BlockFace.DOWN);
 
+        if (belowBlock.isEmpty()) {
+            return false;
+        }
+
         if (preventTpInLiquid && belowBlock.isLiquid()) {
             return false;
         }
