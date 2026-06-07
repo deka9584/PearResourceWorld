@@ -125,7 +125,7 @@ public abstract class Gui implements InventoryHolder {
         inventory = plugin.getServer().createInventory(this, size, displayName);
 
         guiItems.forEach(gi -> {
-            if (gi.isDisplayable()) {
+            if (!gi.isHidden()) {
                 inventory.setItem(gi.getPosition(), gi.getItem());
             }
         });

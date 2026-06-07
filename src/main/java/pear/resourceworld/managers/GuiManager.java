@@ -14,6 +14,7 @@ import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.gui.AdminGui;
 import pear.resourceworld.gui.ConfirmResetGui;
 import pear.resourceworld.gui.Gui;
+import pear.resourceworld.gui.PlayerTeleportGui;
 import pear.resourceworld.gui.AdminTeleportGui;
 import pear.resourceworld.model.GuiType;
 
@@ -40,9 +41,8 @@ public class GuiManager {
 
         guiConfig = YamlConfiguration.loadConfiguration(guiFile);
 
-        if (guiConfig == null) {
-            plugin.logError("GUI configuration not loaded");
-            return;
+        if (plugin.copyDefaultConfigOptions(guiConfig, "gui.yml")) {
+            plugin.saveFileConfiguration(guiConfig, guiFile);
         }
 
         guiMap.clear();
@@ -60,6 +60,11 @@ public class GuiManager {
         guiMap.put(
             GuiType.ADMIN_TELEPORT,
             new AdminTeleportGui(plugin, getConfigForGui(GuiType.ADMIN_TELEPORT))
+        );
+
+        guiMap.put(
+            GuiType.PLAYER_TELEPORT,
+            new PlayerTeleportGui(plugin, getConfigForGui(GuiType.PLAYER_TELEPORT))
         );
 
         guiMap.values().forEach(gui -> {

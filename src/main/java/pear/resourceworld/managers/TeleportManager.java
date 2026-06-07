@@ -29,6 +29,7 @@ public class TeleportManager {
     private int signTpDelay;
     private boolean bypassDelayPerm;
     private boolean preventTpInLiquid;
+    private boolean playerTeleportGuiEnabled;
 
     public TeleportManager(PearResourceWorld plugin) {
         this.plugin = plugin;
@@ -42,6 +43,7 @@ public class TeleportManager {
         signTpDelay = config.getInt("signs-teleport-delay");
         bypassDelayPerm = config.getBoolean("bypass-delay-permission");
         preventTpInLiquid = config.getBoolean("safe-location-check.prevent-liquid-blocks");
+        playerTeleportGuiEnabled = config.getBoolean("enable-player-teleport-gui");
 
         blacklistedBlockTypes.clear();
 
@@ -67,6 +69,10 @@ public class TeleportManager {
 
     public boolean canBypassDelay(Player player) {
         return bypassDelayPerm && player.hasPermission(RWPermission.TP_DELAY_BYPASS.get());
+    }
+
+    public boolean canUsePlayerTpGui(Player player) {
+        return playerTeleportGuiEnabled && player.hasPermission(RWPermission.TP_GUI.get());
     }
 
     public int getRtpRange() {

@@ -34,6 +34,9 @@ permissions:
   pearresourceworld.tp:
     description: Allows resource world tp command
     default: true
+  pearresourceworld.tp.gui:
+    description: Allows to use the player teleport GUI
+    default: op
   pearresourceworld.tp.spawn:
     description: Allows resource world SPAWN subcommand
     default: true

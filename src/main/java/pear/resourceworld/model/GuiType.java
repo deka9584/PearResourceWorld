@@ -3,7 +3,8 @@ package pear.resourceworld.model;
 public enum GuiType {
     ADMIN("admin-gui"),
     CONFIRM_RESET("confirm-reset-gui"),
-    ADMIN_TELEPORT("admin-teleport-gui");
+    ADMIN_TELEPORT("admin-teleport-gui"),
+    PLAYER_TELEPORT("player-teleport-gui");
 
     private final String configKey;
 

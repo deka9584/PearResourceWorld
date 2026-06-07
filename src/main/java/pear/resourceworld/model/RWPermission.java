@@ -8,6 +8,7 @@ public enum RWPermission {
     ADMIN_KICKALL("pearresourceworld.admin.kickall"),
     ADMIN_TIME("pearresourceworld.admin.time"),
     TP("pearresourceworld.tp"),
+    TP_GUI("pearresourceworld.tp.gui"),
     TP_SPAWN("pearresourceworld.tp.spawn"),
     TP_COOLDOWN_BYPASS("pearresourceworld.tp.cooldown.bypass"),
     TP_DELAY_BYPASS("pearresourceworld.tp.delay.bypass"),

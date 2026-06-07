@@ -48,8 +48,8 @@ public class GuiItem {
         return disabled;
     }
     
-    public boolean isDisplayable() {
-        return position >= 0;
+    public boolean isHidden() {
+        return position < 0;
     }
 
     public boolean isSimilar(ItemStack itemToCompare) {

@@ -80,6 +80,10 @@ public class TeleportHelper {
         return true;
     }
 
+    public boolean canShowPlayerTpGui(Player player) {
+        return teleportManager.canUsePlayerTpGui(player) && rwManager.getEnabledDimensions().size() > 1;
+    }
+
     public void signTeleport(Player player) {
         if (rwManager.isResourceWorld(player.getWorld())) {
             teleportToSpawn(player, true);
@@ -94,7 +98,7 @@ public class TeleportHelper {
             return;
         }
 
-        if (rwManager.isResourceWorld(player.getWorld())) {
+        if (rwManager.isResourceWorld(player.getWorld()) && !teleportManager.canUsePlayerTpGui(player)) {
             player.sendMessage(messagesFm.getMessage("already-resource-world-self"));
             return;
         }
@@ -103,8 +107,12 @@ public class TeleportHelper {
         World world = resourceWorld != null ? resourceWorld.getWorld() : null;
 
         if (world == null) {
-            plugin.logError("Resource world not found");
             player.sendMessage(messagesFm.getMessage("teleport-failed"));
+            return;
+        }
+
+        if (world.getName().equals(player.getWorld().getName())) {
+            player.sendMessage(messagesFm.getMessage("already-resource-world-self"));
             return;
         }
         
@@ -228,7 +236,7 @@ public class TeleportHelper {
 
             if (teleportManager.isLocationSafe(randomLoc)) {
                 teleportManager.endLocationSearch(playerUUID);
-                teleportPlayer(player, randomLoc);
+                teleportPlayer(player, randomLoc.add(0.5, 0, 0.5));
                 plugin.debugLog("Safe location found in attempt: " + attempt);
                 return;
             }
