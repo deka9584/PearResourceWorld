@@ -41,11 +41,12 @@ public class GuiManager {
         }
 
         guiConfig = YamlConfiguration.loadConfiguration(guiFile);
-        enableSounds = guiConfig.getBoolean("enable-gui-sounds");
 
         if (plugin.copyDefaultConfigOptions(guiConfig, "gui.yml")) {
             plugin.saveFileConfiguration(guiConfig, guiFile);
         }
+
+        enableSounds = guiConfig.getBoolean("enable-gui-sounds");
 
         guiMap.clear();
 
@@ -57,6 +58,12 @@ public class GuiManager {
 
     public Gui createGui(GuiType type) {
         Gui gui = initGui(type);
+
+        if (gui == null) {
+            plugin.logError("Unable to create GUI: " + type.name());
+            return null;
+        }
+
         gui.setSoundsEnabled(enableSounds);
         return gui;
     }
@@ -83,7 +90,6 @@ public class GuiManager {
                 return new PlayerTeleportGui(plugin, configSect);
         
             default:
-                plugin.logWarn("Invalid GUI type:" + type.name());
                 return null;
         }
     }
