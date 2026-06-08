@@ -84,7 +84,7 @@ public class PortalListener implements Listener {
     public void onPlayerPortal(PlayerPortalEvent event) {
         Location from = event.getFrom();
 
-        if (event.isCancelled() || !rwPortalHelper.isFromResourceWorld(from)) {
+        if (event.isCancelled() || !rwManager.isResourceWorld(from.getWorld())) {
             return;
         }
 
@@ -132,8 +132,9 @@ public class PortalListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onEntityPortal(EntityPortalEvent event) {
         Location from = event.getFrom();
+        World fromWorld = from.getWorld();
 
-        if (event.isCancelled() || !rwPortalHelper.isFromResourceWorld(from)) {
+        if (event.isCancelled() || !rwManager.isResourceWorld(fromWorld)) {
             return;
         }
 
@@ -144,7 +145,6 @@ public class PortalListener implements Listener {
             return;
         }
 
-        World fromWorld = from.getWorld();
         World toWorld = to.getWorld();
         PortalType portalType;
 
@@ -168,7 +168,7 @@ public class PortalListener implements Listener {
             return;
         }
 
-        Location dest = rwPortalHelper.getPortalDestination(from, portalType, event.getTo());
+        Location dest = rwPortalHelper.getPortalDestination(from, portalType, to);
 
         if (dest == null) {
             plugin.debugLog("Entity portal location default: " + event.getEntityType().name());

@@ -261,10 +261,6 @@ public class TeleportHelper {
             return false;
         }
 
-        if (!rwManager.isResourceWorldReady() && rwManager.isResourceWorld(dest.getWorld())) {
-            return false;
-        }
-
-        return true;
+        return rwManager.isResourceWorldReady() || !rwManager.isResourceWorld(dest.getWorld());
     }
 }

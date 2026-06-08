@@ -48,10 +48,6 @@ public class RWPortalHelper {
         return false;
     }
 
-    public boolean isFromResourceWorld(Location from) {
-        return from != null && rwManager.isResourceWorld(from.getWorld());
-    }
-
     public boolean isPortalAllowed(PortalType portalType) {
         switch (portalType) {
             case NETHER:
@@ -68,9 +64,9 @@ public class RWPortalHelper {
 
         // Overworld -> nether
         if (fromEnv == Environment.NORMAL && portalType == PortalType.NETHER) {
-            World dstWorld = getRwWorld(RWDimension.NETHER);
+            ResourceWorld rw = rwManager.getResourceWorld(RWDimension.NETHER);
             
-            if (dstWorld == null) {
+            if (rw == null) {
                 return null;
             }
 
@@ -78,23 +74,23 @@ public class RWPortalHelper {
             int z = from.getBlockZ() / 8;
             int y = Math.min(from.getBlockY() / 2, 120);
 
-            return new Location(dstWorld, x, y, z);
+            return new Location(rw.getWorld(), x, y, z);
         }
 
         // Overworld -> end
         if (fromEnv == Environment.NORMAL && portalType == PortalType.ENDER) {
-            World dstWorld = getRwWorld(RWDimension.END);
+            ResourceWorld rw = rwManager.getResourceWorld(RWDimension.END);
 
-            return dstWorld != null && originalTo != null
-                ? new Location(dstWorld, originalTo.getX(), originalTo.getY(), originalTo.getZ())
+            return rw != null && originalTo != null
+                ? new Location(rw.getWorld(), originalTo.getX(), originalTo.getY(), originalTo.getZ())
                 : null;
         }
 
         // Nether -> overworld
         if (fromEnv == Environment.NETHER && portalType == PortalType.NETHER) {
-            World dstWorld = getRwWorld(RWDimension.OVERWORLD);
+            ResourceWorld rw = rwManager.getResourceWorld(RWDimension.OVERWORLD);
 
-            if (dstWorld == null) {
+            if (rw == null) {
                 return null;
             }
             
@@ -102,7 +98,7 @@ public class RWPortalHelper {
             int z = from.getBlockZ() * 8;
             int y = Math.min(from.getBlockY() * 2, 240);
 
-            return new Location(dstWorld, x, y, z);
+            return new Location(rw.getWorld(), x, y, z);
         }
 
         return null;
@@ -135,10 +131,5 @@ public class RWPortalHelper {
         });
 
         return true;
-    }
-
-    private World getRwWorld(RWDimension dim) {
-        ResourceWorld rw = rwManager.getResourceWorld(dim);
-        return rw != null ? rw.getWorld() : null;
     }
 }
