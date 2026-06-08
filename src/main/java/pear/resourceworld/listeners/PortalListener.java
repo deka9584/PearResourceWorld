@@ -7,10 +7,12 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -178,28 +180,51 @@ public class PortalListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+    public void onPortalEnter(EntityPortalEnterEvent event) {
+        if (event.getEntityType() != EntityType.PLAYER) {
             return;
         }
 
+        Location loc = event.getLocation();
+        
+        if (loc.getBlock().getType() == Material.END_PORTAL) {
+            World world = loc.getWorld();
+        
+            if (world.getEnvironment() == Environment.THE_END && rwManager.isResourceWorld(world)) {
+                Entity entity = event.getEntity();
+
+                if (rwManager.getRWSettings().getSkipEndCredits()) {
+                    rwPortalHelper.skipEndCredits(entity.getUniqueId());
+                }
+
+                plugin.debugLog("End portal to overworld: " + entity.getName());
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
 
-        if (!rwManager.isResourceWorld(player.getWorld()) || rwPortalHelper.isPortalAllowed(PortalType.ENDER)) {
-            return;
-        }
-        
-        ItemStack item = event.getItem();
-        Block block = event.getClickedBlock();
-
-        if (item == null || block == null) {
+        if (!rwManager.isResourceWorld(player.getWorld())) {
             return;
         }
 
-        if (item.getType() == Material.ENDER_EYE && block.getType() == Material.END_PORTAL_FRAME) {
-            event.setCancelled(true);
-            player.sendMessage(plugin.getMessagesFileManager().getMessage("portal-disabled"));
-            plugin.debugLog("Prevented placing eye on end portal frame from player: " + player.getName());
+        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            ItemStack item = event.getItem();
+            Block block = event.getClickedBlock();
+
+            if (item != null && block != null) {
+                boolean preventEndPortal = !rwPortalHelper.isPortalAllowed(PortalType.ENDER);
+                Material itemType = item.getType();
+                Material blockType = block.getType();
+
+                if (preventEndPortal && itemType == Material.ENDER_EYE && blockType == Material.END_PORTAL_FRAME) {
+                    event.setCancelled(true);
+                    player.sendMessage(plugin.getMessagesFileManager().getMessage("portal-disabled"));
+                    plugin.debugLog("Prevented placing eye on end portal frame from player: " + player.getName());
+                }
+            }
         }
     }
 }

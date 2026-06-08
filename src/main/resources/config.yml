@@ -62,6 +62,7 @@ resource-world-settings:
   world-type: DEFAULT
   generate-structures: true
   keep-spawn-in-memory: false
+  skip-end-credits: false
 
 # If resource nether/end is disabled and portals are enabled
 # they will bring to the nether/end dimension in the default world

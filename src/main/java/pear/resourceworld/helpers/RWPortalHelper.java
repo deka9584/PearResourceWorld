@@ -1,21 +1,26 @@
 package pear.resourceworld.helpers;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 import org.bukkit.Location;
 import org.bukkit.PortalType;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
+import org.bukkit.entity.Player;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.ResourceWorldsManager;
 import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.ResourceWorld;
-import pear.resourceworld.model.ResourceWorldSettings;
 import pear.resourceworld.utils.NMSWorldUtils;
 import pear.resourceworld.utils.WorldUtils;
 
 public class RWPortalHelper {
     private final PearResourceWorld plugin;
     private final ResourceWorldsManager rwManager;
+    private final Set<UUID> skipEndCreditsRunning = new HashSet<>();
 
     public RWPortalHelper(PearResourceWorld plugin) {
         this.plugin = plugin;
@@ -43,23 +48,16 @@ public class RWPortalHelper {
         return false;
     }
 
-    public boolean isDragonBattleDisabled() {
-        ResourceWorldSettings rwSettings = rwManager.getRWSettings();
-        return rwSettings != null && rwSettings.getDisableDragonBattle();
-    }
-
     public boolean isFromResourceWorld(Location from) {
         return from != null && rwManager.isResourceWorld(from.getWorld());
     }
 
     public boolean isPortalAllowed(PortalType portalType) {
-        ResourceWorldSettings rwSettings = rwManager.getRWSettings();
-
         switch (portalType) {
             case NETHER:
-                return rwSettings.getAllowNetherPortals();
+                return rwManager.getRWSettings().getAllowNetherPortals();
             case ENDER:
-                return rwSettings.getAllowEndPortals();
+                return rwManager.getRWSettings().getAllowEndPortals();
             default:
                 return false;
         }
@@ -108,6 +106,35 @@ public class RWPortalHelper {
         }
 
         return null;
+    }
+
+    public boolean skipEndCredits(UUID playerUUID) {
+        if (!skipEndCreditsRunning.add(playerUUID)) {
+            return false;
+        }
+
+        plugin.getServer().getScheduler().runTask(plugin, () -> {
+            Player player = plugin.getServer().getPlayer(playerUUID);
+
+            if (player == null) {
+                skipEndCreditsRunning.remove(playerUUID);
+                return;
+            }
+
+            if (!player.isValid() && player.isDead()) {
+                if (!NMSWorldUtils.skipEndCredits(player)) {
+                    plugin.logWarn("Unable to skip end credits for player: " + player.getName());
+                }
+            } else {
+                plugin.debugLog("End credits not showed to player: " + player.getName());
+            }
+
+            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+                skipEndCreditsRunning.remove(playerUUID);
+            }, 100L); 
+        });
+
+        return true;
     }
 
     private World getRwWorld(RWDimension dim) {

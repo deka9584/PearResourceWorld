@@ -1,9 +1,12 @@
 package pear.resourceworld.utils;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 public class NMSWorldUtils {
     public static boolean generateEndExitPortal(World endWorld, boolean setDragonKilled) {
@@ -74,5 +77,58 @@ public class NMSWorldUtils {
         }
 
         return false;
+    }
+
+    public static boolean skipEndCredits(Player player) {
+        try {
+            String version = getServerVersion();
+            Object craftPlayer = player;
+
+            Method getHandle = craftPlayer.getClass().getMethod("getHandle");
+            Object entityPlayer = getHandle.invoke(craftPlayer);
+
+            Field pcField = entityPlayer.getClass().getField("playerConnection");
+            Object playerConnection = pcField.get(entityPlayer);
+
+            Class<?> packetClass = Class.forName(
+                "net.minecraft.server." + version +
+                ".PacketPlayInClientCommand"
+            );
+
+            Class<?> enumClass = Class.forName(
+                "net.minecraft.server." + version +
+                ".PacketPlayInClientCommand$EnumClientCommand"
+            );
+
+            Object performRespawn = Enum.valueOf((Class<Enum>) enumClass, "PERFORM_RESPAWN");
+
+            Constructor<?> ctor = packetClass.getConstructor(enumClass);
+            Object packet = ctor.newInstance(performRespawn);
+
+            for (Method m : playerConnection.getClass().getMethods()) {
+                String name = m.getName();
+
+                if (name.equals("sendPacket") || name.equals("a")) {
+                    if (m.getParameterCount() == 1 && m.getParameterTypes()[0] == packetClass) {
+                        m.invoke(playerConnection, packet);
+                        break;
+                    }
+                }
+            }
+
+            return true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public static String getServerVersion() {
+        return Bukkit.getServer()
+            .getClass()
+            .getPackage()
+            .getName()
+            .split("\\.")[3];
     }
 }
