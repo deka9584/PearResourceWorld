@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -39,6 +40,12 @@ public class ResourceWorldsManager {
 
     public Set<RWDimension> getEnabledDimensions() {
         return resourceWorlds.keySet();
+    }
+
+    public List<Player> getPlayersInResourceWorld() {
+        return plugin.getServer().getOnlinePlayers().stream()
+            .filter(p -> isResourceWorld(p.getWorld()))
+            .collect(Collectors.toList());
     }
 
     public ResourceWorld getResourceWorld(RWDimension dimension) {
@@ -242,13 +249,11 @@ public class ResourceWorldsManager {
     public void kickAllFromResourceWorld() {
         String message = plugin.getMessagesFileManager().getMessage("kick-from-resource-world");
 
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (isResourceWorld(player.getWorld())) {
-                if (player.teleport(spawnWorld.getSpawnLocation())) {
-                    player.sendMessage(message);
-                } else {
-                    player.kickPlayer(message);
-                }
+        for (Player player : getPlayersInResourceWorld()) {
+            if (player.teleport(spawnWorld.getSpawnLocation())) {
+                player.sendMessage(message);
+            } else {
+                player.kickPlayer(message);
             }
         }
     }

@@ -62,43 +62,16 @@ public class RWPortalHelper {
     public Location getPortalDestination(Location from, PortalType portalType, Location originalTo) {
         Environment fromEnv = from.getWorld().getEnvironment();
 
-        // Overworld -> nether
         if (fromEnv == Environment.NORMAL && portalType == PortalType.NETHER) {
-            ResourceWorld rw = rwManager.getResourceWorld(RWDimension.NETHER);
-            
-            if (rw == null) {
-                return null;
-            }
-
-            int x = from.getBlockX() / 8;
-            int z = from.getBlockZ() / 8;
-            int y = Math.min(from.getBlockY() / 2, 120);
-
-            return new Location(rw.getWorld(), x, y, z);
+            return getOverworldToNetherLoc(from);
         }
 
-        // Overworld -> end
-        if (fromEnv == Environment.NORMAL && portalType == PortalType.ENDER) {
-            ResourceWorld rw = rwManager.getResourceWorld(RWDimension.END);
-
-            return rw != null && originalTo != null
-                ? new Location(rw.getWorld(), originalTo.getX(), originalTo.getY(), originalTo.getZ())
-                : null;
-        }
-
-        // Nether -> overworld
         if (fromEnv == Environment.NETHER && portalType == PortalType.NETHER) {
-            ResourceWorld rw = rwManager.getResourceWorld(RWDimension.OVERWORLD);
+            return getNetherToOverworldLoc(from);
+        }
 
-            if (rw == null) {
-                return null;
-            }
-            
-            int x = from.getBlockX() * 8;
-            int z = from.getBlockZ() * 8;
-            int y = Math.min(from.getBlockY() * 2, 240);
-
-            return new Location(rw.getWorld(), x, y, z);
+        if (fromEnv == Environment.NORMAL && portalType == PortalType.ENDER) {
+            return getOverworldToEndLoc(from, originalTo);
         }
 
         return null;
@@ -131,5 +104,48 @@ public class RWPortalHelper {
         });
 
         return true;
+    }
+
+    private Location getNetherToOverworldLoc(Location from) {
+        ResourceWorld rw = rwManager.getResourceWorld(RWDimension.OVERWORLD);
+
+        if (rw == null) {
+            return null;
+        }
+
+        int x = from.getBlockX() * 8;
+        int z = from.getBlockZ() * 8;
+        int y = Math.min(from.getBlockY() * 2, 240);
+
+        return new Location(rw.getWorld(), x, y, z);
+    }
+
+    private Location getOverworldToNetherLoc(Location from) {
+        ResourceWorld rw = rwManager.getResourceWorld(RWDimension.NETHER);
+            
+        if (rw == null) {
+            return null;
+        }
+
+        int x = from.getBlockX() / 8;
+        int z = from.getBlockZ() / 8;
+        int y = Math.min(from.getBlockY() / 2, 120);
+
+        return new Location(rw.getWorld(), x, y, z);
+    }
+
+    private Location getOverworldToEndLoc(Location from, Location originalTo) {
+        ResourceWorld rw = rwManager.getResourceWorld(RWDimension.END);
+
+        if (rw == null) {
+            return null;
+        }
+
+        return new Location(
+            rw.getWorld(),
+            originalTo.getX(),
+            originalTo.getY(),
+            originalTo.getZ()
+        );
     }
 }

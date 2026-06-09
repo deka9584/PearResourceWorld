@@ -28,6 +28,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         "tp",
         "tpspawn",
         "reset",
+        "list",
         "kickall",
         "time",
         "help"
@@ -95,6 +96,15 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     }
                     
                     return true;
+
+                case "list":
+                    sender.sendMessage("ResourceWorld players:\n" + String.join("\n", 
+                        rwManager.getPlayersInResourceWorld().stream()
+                            .map(p -> "- " + p.getName())
+                            .collect(Collectors.toList())
+                    ));
+
+                    break;
 
                 case "kickall":
                     if (!sender.hasPermission(RWPermission.ADMIN_KICKALL.get())) {
