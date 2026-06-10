@@ -28,7 +28,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         "tp",
         "tpspawn",
         "reset",
-        "list",
+        "playerlist",
         "kickall",
         "time",
         "help"
@@ -97,14 +97,9 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     
                     return true;
 
-                case "list":
-                    sender.sendMessage("ResourceWorld players:\n" + String.join("\n", 
-                        rwManager.getPlayersInResourceWorld().stream()
-                            .map(p -> "- " + p.getName())
-                            .collect(Collectors.toList())
-                    ));
-
-                    break;
+                case "playerlist":
+                    sendPlayerList(sender);
+                    return true;
 
                 case "kickall":
                     if (!sender.hasPermission(RWPermission.ADMIN_KICKALL.get())) {
@@ -216,5 +211,17 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         String authors = String.join(", ", desc.getAuthors());
         sender.sendMessage(ChatColor.GREEN + desc.getName() + " v." + desc.getVersion() + " by " + authors);
         sender.sendMessage("Subcommands: " + String.join(", ", SUBCOMMANDS));
+    }
+
+    private void sendPlayerList(CommandSender sender) {
+        Set<String> playerNames = rwManager.getPlayersInResourceWorld().stream()
+            .map(Player::getName)
+            .collect(Collectors.toSet());
+
+        String message = messagesFm.getMessage("resource-world-player-list")
+            .replaceAll("%count%", String.valueOf(playerNames.size()))
+            .replaceAll("%list%", String.join(", ", playerNames));
+
+        sender.sendMessage(message);
     }
 }
