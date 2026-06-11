@@ -128,8 +128,6 @@ public class TeleportHelper {
         int delay = teleportManager.getTpDelay(player, fromSign);
         int cooldownSeconds = useCooldown ? cooldownManager.getTpRemainingSeconds(player) : 0;
 
-        plugin.getLogger().info("use cooldown: " + useCooldown + cooldownSeconds);
-
         if (cooldownSeconds > 0) {
             player.sendMessage(
                 messagesFm.getMessage("teleport-cooldown")
