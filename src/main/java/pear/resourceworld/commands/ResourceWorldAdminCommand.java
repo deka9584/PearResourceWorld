@@ -30,6 +30,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         "reset",
         "playerlist",
         "kickall",
+        "cleartpcooldown",
         "time",
         "help"
     };
@@ -111,6 +112,14 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     sender.sendMessage(messagesFm.getMessage("kicked-all-players-from-resource-world"));
                     return true;
 
+                case "cleartpcooldown":
+                    if (!sender.hasPermission(RWPermission.ADMIN_CLEARTPCOOLDOWN.get())) {
+                        sender.sendMessage(messagesFm.getNoPermissionMessage());
+                        return false;
+                    }
+
+                    return handleClearTpCooldown(sender, args);
+
                 case "time":
                     if (!sender.hasPermission(RWPermission.ADMIN_TIME.get())) {
                         sender.sendMessage(messagesFm.getNoPermissionMessage());
@@ -165,6 +174,11 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                 }
 
                 break;
+
+            case "cleartpcooldown":
+                if (args.length == 2) {
+                    return null;
+                }
             
             default:
                 break;
@@ -185,12 +199,13 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             player = (Player) sender;
         } else {
             player = plugin.getServer().getPlayer(args[1]);
+            
+            if (player == null) {
+                sender.sendMessage(messagesFm.getMessage("player-not-found"));
+                return false;
+            }
         }
 
-        if (player == null) {
-            sender.sendMessage(messagesFm.getMessage("player-not-found"));
-            return false;
-        }
 
         if (toSpawn) {
             return plugin.getTeleportHelper().adminTeleportSpawn(player, sender);
@@ -204,6 +219,32 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         }
 
         return plugin.getTeleportHelper().adminTeleportResource(player, sender, dim);
+    }
+
+    private boolean handleClearTpCooldown(CommandSender sender, String[] args) {
+        Player player;
+
+        if (args.length == 1) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage(messagesFm.getMessage("command-player-only"));
+                return false;
+            }
+
+            player = (Player) sender;
+        } else {
+            player = plugin.getServer().getPlayer(args[1]);
+            
+            if (player == null) {
+                sender.sendMessage(messagesFm.getMessage("player-not-found"));
+                return false;
+            }
+        }
+
+        plugin.getCooldownManager().removeTpCooldown(player.getUniqueId(), true);
+        sender.sendMessage(
+            messagesFm.getMessage("tp-cooldown-clear").replaceAll("%player%", player.getName())
+        );
+        return true;
     }
 
     private void sendHelp(CommandSender sender) {

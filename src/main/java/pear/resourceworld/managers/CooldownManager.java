@@ -5,18 +5,16 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.model.RWPermission;
 
 public class CooldownManager {
     private final PearResourceWorld plugin;
-    private final Map<UUID, Long> cooldowns = new HashMap<>();
+    private final Map<UUID, Long> tpCooldowns = new HashMap<>();
 
     private boolean bypassCooldownPerm;
     private long tpCooldownMillis;
-    private BukkitTask cleanupCooldownsTask;
 
     public CooldownManager(PearResourceWorld plugin) {
         this.plugin = plugin;
@@ -25,48 +23,46 @@ public class CooldownManager {
     public void load() {
         bypassCooldownPerm = plugin.getConfig().getBoolean("bypass-cooldown-permission");
         tpCooldownMillis = plugin.getConfig().getInt("teleport-cooldown") * 1000L;
-
-        if (cleanupCooldownsTask != null && !cleanupCooldownsTask.isCancelled()) {
-            cleanupCooldownsTask.cancel();
-        }
-
-        if (tpCooldownMillis > 0) {
-            cleanupCooldownsTask = plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-                long now = System.currentTimeMillis();
-
-                if (cooldowns.entrySet().removeIf(entry -> now - entry.getValue() > tpCooldownMillis)) {
-                    plugin.debugLog("Cooldowns cleaned up");
-                }
-            }, 20L * 60 * 60, 20L * 60 * 60);
-        }
     }
 
     public void addTpCooldown(UUID playerUUID) {
         if (tpCooldownMillis > 0) {
-            cooldowns.put(playerUUID, System.currentTimeMillis());
+            tpCooldowns.put(playerUUID, System.currentTimeMillis() + tpCooldownMillis);
         }
     }
 
-    public boolean canBypassCooldown(Player player) {
+    public boolean canBypassTpCooldown(Player player) {
         return bypassCooldownPerm && player.hasPermission(RWPermission.TP_COOLDOWN_BYPASS.get());
     }
 
     public int getTpRemainingSeconds(Player player) {
-        if (canBypassCooldown(player)) {
-            return 0;
-        }
+        if (!canBypassTpCooldown(player)) {
+            Long expiry = tpCooldowns.get(player.getUniqueId());
 
-        UUID playerUUID = player.getUniqueId();
+            if (expiry != null) {
+                long remaining = expiry - System.currentTimeMillis();
 
-        if (cooldowns.containsKey(playerUUID)) {
-            long now = System.currentTimeMillis();
-            long lastUse = cooldowns.get(playerUUID);
-            
-            if (now - lastUse < tpCooldownMillis) {
-                return (int) ((tpCooldownMillis - (now - lastUse)) / 1000);
+                if (remaining > 0) {
+                    return (int) Math.ceil(remaining / 1000);
+                }
             }
         }
 
         return 0;
+    }
+
+    public boolean removeTpCooldown(UUID playerUUID, boolean ignoreExpiry) {
+        Long expiry = tpCooldowns.get(playerUUID);
+
+        if (expiry == null) {
+            return false;
+        }
+
+        if (ignoreExpiry || expiry <= System.currentTimeMillis()) {
+            tpCooldowns.remove(playerUUID);
+            return true;
+        }
+
+        return false;
     }
 }
