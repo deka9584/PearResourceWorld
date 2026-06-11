@@ -128,6 +128,8 @@ public class TeleportHelper {
         int delay = teleportManager.getTpDelay(player, fromSign);
         int cooldownSeconds = useCooldown ? cooldownManager.getTpRemainingSeconds(player) : 0;
 
+        plugin.getLogger().info("use cooldown: " + useCooldown + cooldownSeconds);
+
         if (cooldownSeconds > 0) {
             player.sendMessage(
                 messagesFm.getMessage("teleport-cooldown")
@@ -136,12 +138,16 @@ public class TeleportHelper {
             return;
         }
 
+        UUID playerUUID = player.getUniqueId();
+
         if (delay == 0) {
+            if (useCooldown) {
+                cooldownManager.addTpCooldown(playerUUID);
+            }
+            
             teleportSafely(player, destination, range, 0);
             return;
         }
-
-        UUID playerUUID = player.getUniqueId();
 
         if (teleportManager.isDelayActive(playerUUID) || teleportManager.isSearchActive(playerUUID)) {
             return;
@@ -184,6 +190,7 @@ public class TeleportHelper {
 
         if (attempt > 50) {
             teleportManager.endLocationSearch(playerUUID);
+            cooldownManager.removeTpCooldown(playerUUID, true);
             plugin.logWarn("Unable to find a safe location to teleport player: " + player.getName());
             player.sendMessage(messagesFm.getMessage("no-safe-locaiton"));
             return;
