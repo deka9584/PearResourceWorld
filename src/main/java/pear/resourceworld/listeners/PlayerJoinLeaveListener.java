@@ -2,7 +2,6 @@ package pear.resourceworld.listeners;
 
 import java.util.UUID;
 
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,15 +22,12 @@ public class PlayerJoinLeaveListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player = event.getPlayer();
-        Location loc = player.getLocation();
-
-        if (loc == null || !rwManager.isResourceWorld(loc.getWorld())) {
-            return;
-        }
-
         if (!rwManager.isResourceWorldReady() || rwManager.getRWSettings().getTeleportSpawnOnQuit()) {
-            player.teleport(rwManager.getSpawnWorld().getSpawnLocation());
+            Player player = event.getPlayer();
+
+            if (rwManager.isResourceWorld(player.getWorld())) {
+                player.teleport(rwManager.getSpawnWorld().getSpawnLocation());
+            }
         }
     }
 
@@ -46,7 +42,7 @@ public class PlayerJoinLeaveListener implements Listener {
             plugin.debugLog("Removed expired teleport cooldown for player: " + player.getName());
         }
 
-        if (rwManager.getRWSettings().getTeleportSpawnOnQuit() && rwManager.isResourceWorld(player.getLocation().getWorld())) {
+        if (rwManager.getRWSettings().getTeleportSpawnOnQuit() && rwManager.isResourceWorld(player.getWorld())) {
             if (player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
                 plugin.debugLog("Quit player teleported to spawn: " + player.getName());
             } else {

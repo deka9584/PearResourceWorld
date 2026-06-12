@@ -61,6 +61,10 @@ public class ResourceWorldsManager {
     }
 
     public boolean isResourceWorld(World world) {
+        if (world == null) {
+            return false;
+        }
+
         for (ResourceWorld rw : resourceWorlds.values()) {
             if (rw.getName().equals(world.getName())) {
                 return true;
