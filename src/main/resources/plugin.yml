@@ -28,6 +28,9 @@ permissions:
   pearresourceworld.admin.kickall:
     description: Allows admin KICKALL subcommand
     default: op
+  pearresourceworld.admin.cleartpcooldown:
+    description: Allows admin cleartpcooldown subcommand
+    default: op
   pearresourceworld.admin.time:
     description: Allows admin TIME subcommand
     default: op
