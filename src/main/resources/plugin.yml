@@ -1,5 +1,5 @@
 name: PearResourceWorld
-version: "1.3"
+version: "1.4"
 author: deka9584
 main: pear.resourceworld.PearResourceWorld
 api-version: 1.15
