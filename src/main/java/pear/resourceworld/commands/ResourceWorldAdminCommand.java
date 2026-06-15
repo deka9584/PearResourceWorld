@@ -28,7 +28,9 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         "tp",
         "tpspawn",
         "reset",
+        "playerlist",
         "kickall",
+        "cleartpcooldown",
         "time",
         "help"
     };
@@ -67,7 +69,7 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    return handleTpCommand(sender, args);
+                    return handleTpCommand(sender, args, false);
 
                 case "tpspawn":
                     if (!sender.hasPermission(RWPermission.ADMIN_TPSPAWN.get())) {
@@ -75,11 +77,16 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                         return false;
                     }
 
-                    return handleTpSpawnCommand(sender, args);
+                    return handleTpCommand(sender, args, true);
 
                 case "reset":
                     if (!sender.hasPermission(RWPermission.ADMIN_RESET.get())) {
                         sender.sendMessage(messagesFm.getNoPermissionMessage());
+                        return false;
+                    }
+
+                    if (!rwManager.isResourceWorldReady()) {
+                        sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
                         return false;
                     }
 
@@ -91,6 +98,10 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     
                     return true;
 
+                case "playerlist":
+                    sendPlayerList(sender);
+                    return true;
+
                 case "kickall":
                     if (!sender.hasPermission(RWPermission.ADMIN_KICKALL.get())) {
                         sender.sendMessage(messagesFm.getNoPermissionMessage());
@@ -100,6 +111,14 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                     rwManager.kickAllFromResourceWorld();
                     sender.sendMessage(messagesFm.getMessage("kicked-all-players-from-resource-world"));
                     return true;
+
+                case "cleartpcooldown":
+                    if (!sender.hasPermission(RWPermission.ADMIN_CLEARTPCOOLDOWN.get())) {
+                        sender.sendMessage(messagesFm.getNoPermissionMessage());
+                        return false;
+                    }
+
+                    return handleClearTpCooldown(sender, args);
 
                 case "time":
                     if (!sender.hasPermission(RWPermission.ADMIN_TIME.get())) {
@@ -155,6 +174,11 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
                 }
 
                 break;
+
+            case "cleartpcooldown":
+                if (args.length == 2) {
+                    return null;
+                }
             
             default:
                 break;
@@ -163,9 +187,8 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         return completeSubCommand;
     }
 
-    private boolean handleTpCommand(CommandSender sender, String[] args) {
+    private boolean handleTpCommand(CommandSender sender, String[] args, boolean toSpawn) {
         Player player;
-        RWDimension dim = RWDimension.OVERWORLD;
 
         if (args.length == 1) {
             if (!(sender instanceof Player)) {
@@ -176,26 +199,29 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             player = (Player) sender;
         } else {
             player = plugin.getServer().getPlayer(args[1]);
-
-            if (args.length > 2) {
-                dim = RWDimension.getByName(args[2]);
+            
+            if (player == null) {
+                sender.sendMessage(messagesFm.getMessage("player-not-found"));
+                return false;
             }
         }
 
-        if (player == null) {
-            sender.sendMessage(messagesFm.getMessage("player-not-found"));
-            return false;
+
+        if (toSpawn) {
+            return plugin.getTeleportHelper().adminTeleportSpawn(player, sender);
         }
+
+        RWDimension dim = args.length > 2 ? RWDimension.getByName(args[2]) : RWDimension.OVERWORLD;
 
         if (dim == null || !rwManager.getEnabledDimensions().contains(dim)) {
             sender.sendMessage(messagesFm.getMessage("dimension-not-found"));
             return false;
         }
 
-        return plugin.getTeleportHelper().adminTeleport(player, sender, dim);
+        return plugin.getTeleportHelper().adminTeleportResource(player, sender, dim);
     }
 
-    private boolean handleTpSpawnCommand(CommandSender sender, String[] args) {
+    private boolean handleClearTpCooldown(CommandSender sender, String[] args) {
         Player player;
 
         if (args.length == 1) {
@@ -207,14 +233,18 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
             player = (Player) sender;
         } else {
             player = plugin.getServer().getPlayer(args[1]);
+            
+            if (player == null) {
+                sender.sendMessage(messagesFm.getMessage("player-not-found"));
+                return false;
+            }
         }
 
-        if (player == null) {
-            sender.sendMessage(messagesFm.getMessage("player-not-found"));
-            return false;
-        }
-
-        return plugin.getTeleportHelper().adminTeleport(player, sender, null);
+        plugin.getCooldownManager().removeTpCooldown(player.getUniqueId(), true);
+        sender.sendMessage(
+            messagesFm.getMessage("tp-cooldown-clear").replaceAll("%player%", player.getName())
+        );
+        return true;
     }
 
     private void sendHelp(CommandSender sender) {
@@ -222,5 +252,17 @@ public class ResourceWorldAdminCommand implements CommandExecutor, TabCompleter 
         String authors = String.join(", ", desc.getAuthors());
         sender.sendMessage(ChatColor.GREEN + desc.getName() + " v." + desc.getVersion() + " by " + authors);
         sender.sendMessage("Subcommands: " + String.join(", ", SUBCOMMANDS));
+    }
+
+    private void sendPlayerList(CommandSender sender) {
+        Set<String> playerNames = rwManager.getPlayersInResourceWorld().stream()
+            .map(Player::getName)
+            .collect(Collectors.toSet());
+
+        String message = messagesFm.getMessage("resource-world-player-list")
+            .replaceAll("%count%", String.valueOf(playerNames.size()))
+            .replaceAll("%list%", String.join(", ", playerNames));
+
+        sender.sendMessage(message);
     }
 }

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.World.Environment;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -16,6 +17,7 @@ import pear.resourceworld.managers.TeleportManager;
 import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.ResourceWorld;
 import pear.resourceworld.utils.Utils;
+import pear.resourceworld.utils.WorldUtils;
 
 public class TeleportHelper {
     private final PearResourceWorld plugin;
@@ -32,56 +34,85 @@ public class TeleportHelper {
         this.teleportManager = plugin.getTeleportManager();
     }
 
-    public boolean adminTeleport(Player player, CommandSender sender, RWDimension dim) {
+    public boolean adminTeleportResource(Player player, CommandSender sender, RWDimension dim) {
         if (!rwManager.isResourceWorldReady()) {
             sender.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
             return false;
         }
+        
+        ResourceWorld resourceWorld = rwManager.getResourceWorld(dim);
+        World world = resourceWorld != null ? resourceWorld.getWorld() : null;
 
-        if (!rwManager.teleportPlayerToResourceWorld(player, dim)) {
+        if (world == null) {
             sender.sendMessage(messagesFm.getMessage("teleport-failed"));
             return false;
         }
 
-        sender.sendMessage(messagesFm.getMessage("teleport-success"));
+        if (world.getName().equals(player.getWorld().getName())) {
+            String message = player == sender
+                ? messagesFm.getMessage("already-resource-world-self")
+                : messagesFm.getMessage("already-resource-world-other")
+                    .replaceAll("%player%", player.getName());
+
+            sender.sendMessage(message);
+            return false;
+        }
+        
+        teleportManager.stopTeleportTasks(player.getUniqueId());
+        teleportSafely(player, world.getSpawnLocation(), teleportManager.getRtpRange(), 0);
         return true;
     }
 
     public boolean adminTeleportSpawn(Player player, CommandSender sender) {
-        if (!player.teleport(rwManager.getSpawnWorld().getSpawnLocation())) {
-            sender.sendMessage(messagesFm.getMessage("teleport-failed"));
+        if (!rwManager.isResourceWorld(player.getWorld())) {
+            String message = player == sender
+                ? messagesFm.getMessage("not-in-resource-world-self")
+                : messagesFm.getMessage("not-in-resource-world-other")
+                    .replaceAll("%player%", player.getName());
+
+            sender.sendMessage(message);
             return false;
         }
-
-        sender.sendMessage(messagesFm.getMessage("teleport-success"));
+        
+        Location spawnLoc = plugin.getResourceWorldsManager().getSpawnWorld().getSpawnLocation();
+        teleportManager.stopTeleportTasks(player.getUniqueId());
+        teleportSafely(player, spawnLoc, 0, 0);
         return true;
+    }
+
+    public boolean canShowPlayerTpGui(Player player) {
+        return teleportManager.canUsePlayerTpGui(player) && rwManager.getEnabledDimensions().size() > 1;
     }
 
     public void signTeleport(Player player) {
         if (rwManager.isResourceWorld(player.getWorld())) {
             teleportToSpawn(player, true);
         } else {
-            teleportToRwOverworld(player, true);
+            teleportToResourceWorld(player, true, RWDimension.OVERWORLD);
         }
     }
 
-    public void teleportToRwOverworld(Player player, boolean fromSign) {
+    public void teleportToResourceWorld(Player player, boolean fromSign, RWDimension dim) {
         if (!rwManager.isResourceWorldReady()) {
             player.sendMessage(messagesFm.getMessage("reset-still-in-progress"));
             return;
         }
 
-        if (rwManager.isResourceWorld(player.getWorld())) {
+        if (rwManager.isResourceWorld(player.getWorld()) && !teleportManager.canUsePlayerTpGui(player)) {
             player.sendMessage(messagesFm.getMessage("already-resource-world-self"));
             return;
         }
         
-        ResourceWorld resourceWorld = rwManager.getResourceWorld(RWDimension.OVERWORLD);
+        ResourceWorld resourceWorld = rwManager.getResourceWorld(dim);
         World world = resourceWorld != null ? resourceWorld.getWorld() : null;
 
         if (world == null) {
-            plugin.logError("Resource world not found");
             player.sendMessage(messagesFm.getMessage("teleport-failed"));
+            return;
+        }
+
+        if (world.getName().equals(player.getWorld().getName())) {
+            player.sendMessage(messagesFm.getMessage("already-resource-world-self"));
             return;
         }
         
@@ -105,12 +136,16 @@ public class TeleportHelper {
             return;
         }
 
+        UUID playerUUID = player.getUniqueId();
+
         if (delay == 0) {
-            teleportSafely(player, destination, range, cooldownSeconds);
+            if (useCooldown) {
+                cooldownManager.addTpCooldown(playerUUID);
+            }
+            
+            teleportSafely(player, destination, range, 0);
             return;
         }
-
-        UUID playerUUID = player.getUniqueId();
 
         if (teleportManager.isDelayActive(playerUUID) || teleportManager.isSearchActive(playerUUID)) {
             return;
@@ -153,6 +188,7 @@ public class TeleportHelper {
 
         if (attempt > 50) {
             teleportManager.endLocationSearch(playerUUID);
+            cooldownManager.removeTpCooldown(playerUUID, true);
             plugin.logWarn("Unable to find a safe location to teleport player: " + player.getName());
             player.sendMessage(messagesFm.getMessage("no-safe-locaiton"));
             return;
@@ -196,12 +232,16 @@ public class TeleportHelper {
             }
 
             World world = destination.getWorld();
-            int highestY = world.getHighestBlockYAt(randomX, randomZ) + 1;
-            Location randomLoc = new Location(world, randomX, highestY, randomZ);
+
+            int highestBlockY = world.getEnvironment() == Environment.NETHER
+                ? WorldUtils.getNetherHighestSpawnableBlockY(world, randomX, randomZ)
+                : world.getHighestBlockYAt(randomX, randomZ);
+            
+            Location randomLoc = new Location(world, randomX, highestBlockY + 1, randomZ);
 
             if (teleportManager.isLocationSafe(randomLoc)) {
                 teleportManager.endLocationSearch(playerUUID);
-                teleportPlayer(player, randomLoc);
+                teleportPlayer(player, randomLoc.add(0.5, 0, 0.5));
                 plugin.debugLog("Safe location found in attempt: " + attempt);
                 return;
             }
@@ -226,10 +266,6 @@ public class TeleportHelper {
             return false;
         }
 
-        if (!rwManager.isResourceWorldReady() && rwManager.isResourceWorld(dest.getWorld())) {
-            return false;
-        }
-
-        return true;
+        return rwManager.isResourceWorldReady() || !rwManager.isResourceWorld(dest.getWorld());
     }
 }

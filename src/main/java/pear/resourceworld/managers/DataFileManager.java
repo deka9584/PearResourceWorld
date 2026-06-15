@@ -54,13 +54,11 @@ public class DataFileManager {
             try {
                 dataFile.createNewFile();
             } catch (IOException ex) {
-                plugin.logError("Unable to create data.yml file");
                 plugin.logError(ex.getMessage());
             }
         }
 
         dataConfig = YamlConfiguration.loadConfiguration(dataFile);
-        plugin.debugLog("Loaded data file");
     }
 
     public boolean save() {

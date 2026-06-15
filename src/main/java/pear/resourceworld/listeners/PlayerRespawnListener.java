@@ -15,6 +15,7 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerBedLeaveEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.World.Environment;
 
 import pear.resourceworld.PearResourceWorld;
 import pear.resourceworld.managers.ResourceWorldsManager;
@@ -30,41 +31,30 @@ public class PlayerRespawnListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerRespawn(PlayerRespawnEvent event) {
-        Location respawnLoc = event.getRespawnLocation();
+        if (!rwManager.isResourceWorldReady() || rwManager.getRWSettings().getDisableSetRespawn()) {
+            Location respawnLoc = event.getRespawnLocation();
 
-        if (respawnLoc == null || !rwManager.isResourceWorld(respawnLoc.getWorld())) {
+            if (respawnLoc != null && rwManager.isResourceWorld(respawnLoc.getWorld())) {
+                event.setRespawnLocation(rwManager.getSpawnWorld().getSpawnLocation());
+                plugin.debugLog("Prevented respawn in resource world: " + event.getPlayer().getName());
+            }
             return;
-        }
-
-        Player player = event.getPlayer();
-
-        if (rwManager.getRWSettings().getDisableSetRespawn()) {
-            event.setRespawnLocation(rwManager.getSpawnWorld().getSpawnLocation());
-            plugin.debugLog("Prevented respawn in to resource world from player: " + player.getName());
-            return;
-        }
-
-        if (!rwManager.isResourceWorldReady()) {
-            event.setRespawnLocation(rwManager.getSpawnWorld().getSpawnLocation());
-            player.sendMessage(plugin.getMessagesFileManager().getMessage("reset-still-in-progress"));
-            plugin.debugLog("Prevented respawn in to world under reset from player: " + player.getName());
         }
     }
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
-        Location bedLoc = player.getBedSpawnLocation();
 
         plugin.getTeleportManager().stopTeleportTasks(player.getUniqueId());
 
-        if (bedLoc == null || !rwManager.isResourceWorld(bedLoc.getWorld())) {
-            return;
-        }
-
         if (!rwManager.isResourceWorldReady() || rwManager.getRWSettings().getDisableSetRespawn()) {
-            player.setBedSpawnLocation(null);
-            plugin.debugLog("Removed bed spawn location in resource world for player: " + player.getName());
+            Location bedLoc = player.getBedSpawnLocation();
+
+            if (bedLoc != null && rwManager.isResourceWorld(bedLoc.getWorld())) {
+                player.setBedSpawnLocation(null);
+                plugin.debugLog("Removed bed spawn location in resource world: " + player.getName());
+            }
         }
     }
 
@@ -73,12 +63,10 @@ public class PlayerRespawnListener implements Listener {
         Player player = event.getPlayer();
         World world = player.getWorld();
 
-        if (!rwManager.isResourceWorld(world) || !rwManager.getRWSettings().getDisableSetRespawn()) {
-            return;
+        if (rwManager.getRWSettings().getDisableSetRespawn() && rwManager.isResourceWorld(world)) {
+            event.setSpawnLocation(false);
+            plugin.debugLog("Prevented setting new spawn location for player: " + player.getName());
         }
-
-        event.setSpawnLocation(false);
-        plugin.debugLog("Prevented setting new spawn location for player: " + player.getName());
     }
 
     @EventHandler
@@ -89,34 +77,21 @@ public class PlayerRespawnListener implements Listener {
 
         Player player = event.getPlayer();
         World world = player.getWorld();
-
-        if (!rwManager.isResourceWorld(world) || !rwManager.getRWSettings().getDisableSetRespawn()) {
-            return;
-        }
-
         Block block = event.getClickedBlock();
 
-        if (block == null) {
-            return;
-        }
+        if (block != null && rwManager.isResourceWorld(world)) {
+            Environment worldEnv = world.getEnvironment();
+            Material blockType = block.getType();
 
-        switch (world.getEnvironment()) {
-            case NORMAL:
-                if (Tag.BEDS.isTagged(block.getType())) {
-                    restoreSpawnLocation(player.getUniqueId(), player.getBedSpawnLocation());
-                }
-                break;
-
-            case NETHER:
-                if (block.getType() == Material.matchMaterial("RESPAWN_ANCHOR")) {
-                    event.setCancelled(true);
-                    player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
-                    plugin.debugLog("Prevented placing respawn anchor for player: " + player.getName());
-                }
-                break;
-        
-            default:
-                break;
+            if (worldEnv == Environment.NORMAL && Tag.BEDS.isTagged(blockType)) {
+                restoreSpawnLocation(player.getUniqueId(), player.getBedSpawnLocation());
+            }
+            
+            if (worldEnv == Environment.NETHER && blockType == Material.matchMaterial("RESPAWN_ANCHOR")) {
+                event.setCancelled(true);
+                player.sendMessage(plugin.getMessagesFileManager().getMessage("unable-to-set-respawn"));
+                plugin.debugLog("Prevented placing respawn anchor for player: " + player.getName());
+            }
         }
     }
 

@@ -115,16 +115,6 @@ public class WorldUtils {
         return wCreator.createWorld();
     }
 
-    public static Difficulty getDifficultyByName(String name) {
-        for (Difficulty diff : Difficulty.values()) {
-            if (diff.name().equalsIgnoreCase(name)) {
-                return diff;
-            }
-        }
-
-        return null;
-    }
-
     public static List<Sign> getAttachedSigns(Block block) {
         List<Sign> signs = new ArrayList<>();
 
@@ -147,6 +137,28 @@ public class WorldUtils {
         }
 
         return signs;
+    }
+
+    public static Difficulty getDifficultyByName(String name) {
+        for (Difficulty diff : Difficulty.values()) {
+            if (diff.name().equalsIgnoreCase(name)) {
+                return diff;
+            }
+        }
+
+        return null;
+    }
+
+    public static int getNetherHighestSpawnableBlockY(World world, int x, int z) {
+        for (int y = 126; y > 0; y--) {
+            Block block = world.getBlockAt(x, y, z);
+
+            if (!block.isEmpty() && block.getRelative(BlockFace.UP).isEmpty()) {
+                return y;
+            }
+        }
+        
+        return 0;
     }
 
     public static boolean hasRelativeBlock(Block block, Material relativeType) {

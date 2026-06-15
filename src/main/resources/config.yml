@@ -31,11 +31,18 @@ signs-teleport-delay: 0
 # Teleport to resource world cooldown in seconds
 teleport-cooldown: 60
 
-# With permission pearresourceworld.tp.delay.bypass will bypass the delay
+# Players with permission pearresourceworld.tp.delay.bypass will bypass the delay
 bypass-delay-permission: true
 
-# With permission pearresourceworld.tp.cooldown.bypass will bypass the cooldown
+# Players with permission pearresourceworld.tp.cooldown.bypass will bypass the cooldown
 bypass-cooldown-permission: true
+
+# Enable player teleport GUI when players execute the command '/resourceworld'
+# true: Players will be able to teleport to all dimensions using a GUI
+# false: Players will be teleported only to overworld
+# Ignored if only OVERWORLD dimension is enabled
+# Permission to use the GUI: pearresourceworld.tp.gui
+enable-player-teleport-gui: false
 
 # RESOURCE WORLD SETTINGS
 # Valid difficulties: PEACEFUL, EASY, NORMAL, HARD
@@ -55,6 +62,7 @@ resource-world-settings:
   world-type: DEFAULT
   generate-structures: true
   keep-spawn-in-memory: false
+  skip-end-credits: false
 
 # If resource nether/end is disabled and portals are enabled
 # they will bring to the nether/end dimension in the default world
@@ -92,3 +100,5 @@ safe-location-check:
     - "POWDER_SNOW"
     - "TALL_SEAGRASS"
     - "FIRE"
+    - "END_PORTAL"
+    - "END_GATEWAY"

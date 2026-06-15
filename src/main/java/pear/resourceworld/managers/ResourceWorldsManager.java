@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -41,6 +42,12 @@ public class ResourceWorldsManager {
         return resourceWorlds.keySet();
     }
 
+    public List<Player> getPlayersInResourceWorld() {
+        return plugin.getServer().getOnlinePlayers().stream()
+            .filter(p -> isResourceWorld(p.getWorld()))
+            .collect(Collectors.toList());
+    }
+
     public ResourceWorld getResourceWorld(RWDimension dimension) {
         return resourceWorlds.get(dimension);
     }
@@ -54,6 +61,10 @@ public class ResourceWorldsManager {
     }
 
     public boolean isResourceWorld(World world) {
+        if (world == null) {
+            return false;
+        }
+
         for (ResourceWorld rw : resourceWorlds.values()) {
             if (rw.getName().equals(world.getName())) {
                 return true;
@@ -74,32 +85,28 @@ public class ResourceWorldsManager {
         useCustomWorlds = config.getBoolean("use-custom-worlds");
         resourceWorldReady = false;
 
-        if (spawnWorldName == null || spawnWorldName.isEmpty()) {
-            plugin.logWarn("Spawn world not specified: Using the default server spawnpoint!");
-            spawnWorld = plugin.getServer().getWorlds().get(0);
-        } else {
-            spawnWorld = plugin.getServer().getWorld(spawnWorldName);
-        }
+        spawnWorld = spawnWorldName != null && !spawnWorldName.isEmpty()
+            ? plugin.getServer().getWorld(spawnWorldName)
+            : null;
 
         if (spawnWorld == null) {
-            plugin.logError("Unable to load resource world: Spawn world not found");
-            return;
+            plugin.logWarn("Invalid spawn world: '" + spawnWorldName + "', usign default world");
+            spawnWorld = plugin.getServer().getWorlds().get(0);
         }
 
         rwSettings.update(config.getConfigurationSection("resource-world-settings"));
 
-        ConfigurationSection dimensions = config.getConfigurationSection("resource-dimensions");
-        String resourceOverworldName = dimensions.getString("overworld.name");
+        ConfigurationSection dimensionsCfg = config.getConfigurationSection("resource-dimensions");
         boolean isNewWorld = false;
-        
-        if (resourceOverworldName == null || resourceOverworldName.isEmpty()) {
-            plugin.logError("Unable to load resource world: Overworld dimension is required");
+
+        if (!dimensionsCfg.contains("overworld")) {
+            plugin.logError("Missing overworld dimension configuration");
             return;
         }
 
         resourceWorlds.clear();
 
-        for (String key : dimensions.getKeys(false)) {
+        for (String key : dimensionsCfg.getKeys(false)) {
             RWDimension dimension = RWDimension.getByName(key);
 
             if (dimension == null) {
@@ -107,14 +114,20 @@ public class ResourceWorldsManager {
                 continue;
             }
 
-            if (!dimensions.getBoolean(key + ".enabled") && !key.equals("overworld")) {
+            if (!key.equals("overworld") && !dimensionsCfg.getBoolean(key + ".enabled")) {
                 continue;
             }
 
-            String worldName = dimensions.getString(key + ".name");
-            double border = dimensions.getDouble(key + ".border");
-            Environment env = dimension.getEnvironment();
-            ResourceWorld resourceWorld = new ResourceWorld(worldName, env);
+            String worldName = dimensionsCfg.getString(key + ".name", "world_resource_" + key);
+
+            if (worldName.equalsIgnoreCase(spawnWorld.getName())) {
+                plugin.logError("Resource world name and spawn world name are similar: " + worldName);
+                continue;
+            }
+
+            double borderSize = dimensionsCfg.getDouble(key + ".border");
+            Environment worldEnv = dimension.getEnvironment();
+            ResourceWorld resourceWorld = new ResourceWorld(worldName, worldEnv);
             World world = plugin.getServer().getWorld(worldName);
 
             if (world == null) {
@@ -138,8 +151,8 @@ public class ResourceWorldsManager {
 
             resourceWorld.setWorld(world);
 
-            if (border > 0) {
-                resourceWorld.setBorderSize(border);
+            if (borderSize > 0) {
+                resourceWorld.setBorderSize(borderSize);
             }
 
             resourceWorld.updateWorldFlags(rwSettings);
@@ -200,7 +213,7 @@ public class ResourceWorldsManager {
 
                     if (useCustomWorlds && existsPreloaedWorld(name)) {
                         if (!copyPreloadedWorld(name)) {
-                            plugin.logError("Unable to delete world: " + name);
+                            plugin.logError("Unable to copy world: " + name);
                             continue;
                         }
 
@@ -237,32 +250,14 @@ public class ResourceWorldsManager {
         }, 80L);
     }
 
-    public boolean teleportPlayerToResourceWorld(Player player, RWDimension dim) {
-        if (!resourceWorldReady) {
-            plugin.debugLog("Resource world is not ready");
-            return false;
-        }
-
-        ResourceWorld resourceWorld = resourceWorlds.get(dim);
-
-        if (resourceWorld == null || resourceWorld.getWorld() == null) {
-            plugin.logError("Resource World dimension not loaded: " + dim.name());
-            return false;
-        }
-
-        return player.teleport(resourceWorld.getWorld().getSpawnLocation());
-    }
-
     public void kickAllFromResourceWorld() {
         String message = plugin.getMessagesFileManager().getMessage("kick-from-resource-world");
 
-        for (Player player : plugin.getServer().getOnlinePlayers()) {
-            if (isResourceWorld(player.getWorld())) {
-                if (player.teleport(spawnWorld.getSpawnLocation())) {
-                    player.sendMessage(message);
-                } else {
-                    player.kickPlayer(message);
-                }
+        for (Player player : getPlayersInResourceWorld()) {
+            if (player.teleport(spawnWorld.getSpawnLocation())) {
+                player.sendMessage(message);
+            } else {
+                player.kickPlayer(message);
             }
         }
     }
@@ -274,17 +269,13 @@ public class ResourceWorldsManager {
     }
 
     private World createRwWorld(ResourceWorld rw) {
-        Environment env = rw.getEnvironment();
-
-        World world = WorldUtils.generateWorld(
+        return WorldUtils.generateWorld(
             rw.getName(),
             rwSettings.getCustomSeed(),
-            env,
+            rw.getEnvironment(),
             rwSettings.getWorldType(),
             rwSettings.getGenerateStructures()
         );
-
-        return world;
     }
 
     private boolean existsPreloaedWorld(String worldName) {
@@ -312,7 +303,7 @@ public class ResourceWorldsManager {
             }
 
             if (isReset) {
-                plugin.getLogger().info("Resource worlds reset completed");
+                plugin.debugLog("Resource worlds reset completed");
 
                 plugin.getServer().broadcastMessage(
                     plugin.getMessagesFileManager().getMessage("reset-completed")

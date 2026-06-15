@@ -20,13 +20,13 @@ import pear.resourceworld.model.GuiType;
 import pear.resourceworld.model.RWDimension;
 import pear.resourceworld.model.RWPermission;
 
-public class AdminTeleportGui extends Gui {
+public class PlayerTeleportGui extends Gui {
     private final MessagesFileManager messagesFm;
     private final ResourceWorldsManager rwManager;
     private final TeleportHelper teleportHelper;
 
-    public AdminTeleportGui(PearResourceWorld plugin, ConfigurationSection guiConfigSect) {
-        super(plugin, GuiType.ADMIN_TELEPORT);
+    public PlayerTeleportGui(PearResourceWorld plugin, ConfigurationSection guiConfigSect) {
+        super(plugin, GuiType.PLAYER_TELEPORT);
 
         this.messagesFm = plugin.getMessagesFileManager();
         this.rwManager = plugin.getResourceWorldsManager();
@@ -66,26 +66,26 @@ public class AdminTeleportGui extends Gui {
         player.closeInventory();
         playSound(player, Sound.UI_BUTTON_CLICK);
 
-        if (!player.hasPermission(RWPermission.ADMIN_TP.get())) {
+        if (!player.hasPermission(RWPermission.TP_GUI.get())) {
             player.sendMessage(messagesFm.getNoPermissionMessage());
             return;
         }
 
         switch (guiItem.getId()) {
             case "overworld-item":
-                teleportHelper.adminTeleportResource(player, player, RWDimension.OVERWORLD);
+                teleportHelper.teleportToResourceWorld(player, false, RWDimension.OVERWORLD);
                 return;
 
             case "nether-item":
-                teleportHelper.adminTeleportResource(player, player, RWDimension.NETHER);
+                teleportHelper.teleportToResourceWorld(player, false, RWDimension.NETHER);
                 return;
             
             case "end-item":
-                teleportHelper.adminTeleportResource(player, player, RWDimension.END);
+                teleportHelper.teleportToResourceWorld(player, false, RWDimension.END);
                 return;
 
             case "spawn-item":
-                teleportHelper.adminTeleportSpawn(player, player);
+                teleportHelper.teleportToSpawn(player, false);
                 return;
 
             default:

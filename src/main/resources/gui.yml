@@ -66,3 +66,33 @@ admin-teleport-gui:
       - "&aTeleport to spawn world"
     material: "ENDER_PEARL"
     position: 7
+
+player-teleport-gui:
+  name: "Resource World Teleport"
+  overworld-item:
+    name: "&aOverworld"
+    lore:
+      - "&6Teleport to resource Overworld"
+      - "&eStatus: %status%"
+    material: "GRASS_BLOCK"
+    position: 2
+  nether-item:
+    name: "&cNether"
+    lore:
+      - "&6Teleport to resource Nether"
+      - "&eStatus: %status%"
+    material: "NETHERRACK"
+    position: 4
+  end-item:
+    name: "&eEnd"
+    lore:
+      - "&6Teleport to resource End"
+      - "&eStatus: %status%"
+    material: "END_STONE"
+    position: 6
+  spawn-item:
+    name: "&6Spawn world"
+    lore:
+      - "&aTeleport to spawn world"
+    material: "ENDER_PEARL"
+    position: -1

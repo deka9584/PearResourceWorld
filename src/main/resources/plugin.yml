@@ -1,5 +1,5 @@
 name: PearResourceWorld
-version: "1.3"
+version: "1.4"
 author: deka9584
 main: pear.resourceworld.PearResourceWorld
 api-version: 1.15
@@ -28,12 +28,18 @@ permissions:
   pearresourceworld.admin.kickall:
     description: Allows admin KICKALL subcommand
     default: op
+  pearresourceworld.admin.cleartpcooldown:
+    description: Allows admin cleartpcooldown subcommand
+    default: op
   pearresourceworld.admin.time:
     description: Allows admin TIME subcommand
     default: op
   pearresourceworld.tp:
     description: Allows resource world tp command
     default: true
+  pearresourceworld.tp.gui:
+    description: Allows to use the player teleport GUI
+    default: op
   pearresourceworld.tp.spawn:
     description: Allows resource world SPAWN subcommand
     default: true
