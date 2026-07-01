@@ -3,9 +3,7 @@ package pear.resourceworld.utils;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -107,7 +105,6 @@ public class WorldUtils {
             try {
                 wCreator.seed(Long.parseLong(customSeed));
             } catch (NumberFormatException ex) {
-                Bukkit.getLogger().log(Level.SEVERE, "Invalid seed format");
                 ex.printStackTrace();
             }
         }

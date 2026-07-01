@@ -50,14 +50,14 @@ public class GuiManager {
 
         guiMap.clear();
 
-        registerGui(createGui(GuiType.ADMIN));
-        registerGui(createGui(GuiType.CONFIRM_RESET));
-        registerGui(createGui(GuiType.ADMIN_TELEPORT));
-        registerGui(createGui(GuiType.PLAYER_TELEPORT));
+        registerGui(setupGui(GuiType.ADMIN));
+        registerGui(setupGui(GuiType.CONFIRM_RESET));
+        registerGui(setupGui(GuiType.ADMIN_TELEPORT));
+        registerGui(setupGui(GuiType.PLAYER_TELEPORT));
     }
 
-    public Gui createGui(GuiType type) {
-        Gui gui = initGui(type);
+    public Gui setupGui(GuiType type) {
+        Gui gui = createGui(type);
 
         if (gui == null) {
             plugin.logError("Unable to create GUI: " + type.name());
@@ -73,7 +73,7 @@ public class GuiManager {
         return gui == null ? null : gui.openInvetory(player);
     }
 
-    private Gui initGui(GuiType type) {
+    private Gui createGui(GuiType type) {
         ConfigurationSection configSect = guiConfig.getConfigurationSection(type.getConfigKey());
 
         switch (type) {

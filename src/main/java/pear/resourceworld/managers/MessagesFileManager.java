@@ -10,6 +10,7 @@ import pear.resourceworld.utils.Utils;
 
 public class MessagesFileManager {
     private final PearResourceWorld plugin;
+    
     private File messagesFile;
     private FileConfiguration messagesConfig;
 
