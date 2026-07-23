@@ -9,15 +9,12 @@ import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.WallSign;
-import org.bukkit.World.Environment;
 import org.bukkit.boss.DragonBattle;
 import org.bukkit.entity.EnderDragon;
 
@@ -93,23 +90,6 @@ public class WorldUtils {
         }
 
         return false;
-    }
-
-    public static World generateWorld(String name, String customSeed, Environment env, WorldType type, boolean generateStructures) {
-        WorldCreator wCreator = new WorldCreator(name);
-        wCreator.type(type);
-        wCreator.environment(env);
-        wCreator.generateStructures(generateStructures);
-
-        if (!customSeed.isEmpty()) {
-            try {
-                wCreator.seed(Long.parseLong(customSeed));
-            } catch (NumberFormatException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        return wCreator.createWorld();
     }
 
     public static List<Sign> getAttachedSigns(Block block) {

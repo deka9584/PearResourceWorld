@@ -24,17 +24,17 @@ public class ResourceWorld {
         return borderSize;
     }
 
-    public void setBorderSize(double size) {
-        this.borderSize = size;
-        updateWorldBorder();
-    }
-
     public Environment getEnvironment() {
         return environment;
     }
 
     public World getWorld() {
         return world;
+    }
+
+    public void setBorderSize(double size) {
+        this.borderSize = size;
+        updateWorldBorder();
     }
 
     public void setWorld(World w) {

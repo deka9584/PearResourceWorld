@@ -29,7 +29,7 @@ public class CommandBlacklistManager {
         }
 
         if (command.startsWith("/")) {
-            command = command.replaceFirst("/", "");
+            command = command.substring(1);
         }
 
         String commandName = command.split(" ")[0];

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.bukkit.configuration.ConfigurationSection;
@@ -12,6 +13,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.World.Environment;
 
 import pear.resourceworld.PearResourceWorld;
@@ -146,7 +148,7 @@ public class ResourceWorldsManager {
                 }
                 
                 plugin.getLogger().info("Loading resource world: " + worldName);
-                world = createRwWorld(resourceWorld);
+                world = createWorld(resourceWorld);
             }
 
             resourceWorld.setWorld(world);
@@ -233,7 +235,7 @@ public class ResourceWorldsManager {
                             continue;
                         }
     
-                        World w = createRwWorld(rw);
+                        World w = createWorld(rw);
     
                         rw.setWorld(w);
                         rw.updateWorldBorder();
@@ -268,14 +270,24 @@ public class ResourceWorldsManager {
         return FileUtils.copyDirectory(from.toPath(), to.toPath());
     }
 
-    private World createRwWorld(ResourceWorld rw) {
-        return WorldUtils.generateWorld(
-            rw.getName(),
-            rwSettings.getCustomSeed(),
-            rw.getEnvironment(),
-            rwSettings.getWorldType(),
-            rwSettings.getGenerateStructures()
-        );
+    private World createWorld(ResourceWorld resourceWorld) {
+        WorldCreator wCreator = new WorldCreator(resourceWorld.getName());
+        
+        wCreator.environment(resourceWorld.getEnvironment());
+        wCreator.type(rwSettings.getWorldType());
+        wCreator.generateStructures(rwSettings.getGenerateStructures());
+        
+        String customSeed = rwSettings.getCustomSeed();
+
+        if (customSeed != null && !customSeed.isEmpty()) {
+            try {
+                wCreator.seed(Long.parseLong(customSeed));
+            } catch (NumberFormatException ex) {
+                plugin.getLogger().log(Level.SEVERE, "Error setting custom seed for world: " + resourceWorld.getName(), ex);
+            }
+        }
+
+        return wCreator.createWorld();
     }
 
     private boolean existsPreloaedWorld(String worldName) {
